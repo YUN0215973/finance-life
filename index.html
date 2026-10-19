@@ -1,0 +1,2156 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>像素理財人生</title>
+<meta name="description" content="像素理財人生：從高三畢業開始的十年。投資達人課程期末複習遊戲。">
+<!-- 字型：俐方體 11 號（Cubic 11），繁體中文像素字型，SIL OFL 1.1 授權 -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" href="https://cdn.jsdelivr.net/gh/ACh-K/Cubic-11@4c566f7d6cc5c05ee360fe9cff56b5da1fcafd4d/fonts/web/Cubic_11.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* ===== 字型 ===== */
+@font-face{
+  font-family:'Cubic11';
+  src:url('Cubic_11.woff2') format('woff2'),            /* 若把字型檔一起上傳到 GitHub，會優先用這個 */
+      url('https://cdn.jsdelivr.net/gh/ACh-K/Cubic-11@4c566f7d6cc5c05ee360fe9cff56b5da1fcafd4d/fonts/web/Cubic_11.woff2') format('woff2');
+  font-display:swap;
+}
+/* ===== PICO-8 調色盤 ===== */
+:root{
+  --black:#000000; --navy:#1D2B53; --plum:#7E2553; --dgreen:#008751;
+  --brown:#AB5236; --dgray:#5F574F; --lgray:#C2C3C7; --white:#FFF1E8;
+  --red:#FF004D; --orange:#FFA300; --yellow:#FFEC27; --green:#00E436;
+  --blue:#29ADFF; --lav:#83769C; --pink:#FF77A8; --peach:#FFCCAA;
+  --px:4px;
+  --font:'Cubic11','Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  background:var(--navy);
+  background-image:
+    linear-gradient(rgba(255,255,255,.04) 2px,transparent 2px),
+    linear-gradient(90deg,rgba(255,255,255,.04) 2px,transparent 2px);
+  background-size:24px 24px;
+  color:var(--white);
+  font-family:var(--font);
+  font-size:17px; line-height:1.7; letter-spacing:.5px;
+}
+.pf{font-family:var(--font);letter-spacing:2px}
+.num,.pct,.big-num{font-family:var(--font);letter-spacing:.5px;font-variant-numeric:tabular-nums}
+#app{max-width:860px;margin:0 auto;padding:16px 16px 48px}
+.hidden{display:none!important}
+
+/* 像素階梯邊框（不用圓角、不用漸層） */
+.box{
+  background:var(--white);color:var(--black);
+  padding:18px 20px;margin:14px var(--px);position:relative;
+  box-shadow:
+    0 calc(var(--px)*-1) 0 0 var(--black),
+    0 var(--px) 0 0 var(--black),
+    calc(var(--px)*-1) 0 0 0 var(--black),
+    var(--px) 0 0 0 var(--black),
+    0 calc(var(--px)*2) 0 0 rgba(0,0,0,.45),
+    var(--px) var(--px) 0 0 rgba(0,0,0,.45);
+}
+.box.dark{background:#10183a;color:var(--white)}
+.box h2{font-size:22px;margin-bottom:8px;letter-spacing:1px}
+.box h3{font-size:17px;margin:12px 0 4px}
+
+/* 按鈕：按下往下 2 像素 */
+.btn{
+  font-family:var(--font);font-size:17px;
+  background:var(--orange);color:var(--black);border:none;cursor:pointer;
+  padding:10px 18px;margin:6px var(--px);position:relative;
+  box-shadow:
+    0 -4px 0 0 var(--black),0 4px 0 0 var(--black),
+    -4px 0 0 0 var(--black),4px 0 0 0 var(--black),
+    inset -4px -4px 0 0 rgba(0,0,0,.25),inset 4px 4px 0 0 rgba(255,255,255,.35);
+}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:translateY(2px);box-shadow:0 -4px 0 0 var(--black),0 4px 0 0 var(--black),-4px 0 0 0 var(--black),4px 0 0 0 var(--black),inset 4px 4px 0 0 rgba(0,0,0,.25)}
+.btn:focus-visible{outline:3px dashed var(--yellow);outline-offset:6px}
+.btn.green{background:var(--green)}
+.btn.blue{background:var(--blue)}
+.btn.red{background:var(--red);color:var(--white)}
+.btn.gray{background:var(--lgray)}
+.btn.pink{background:var(--pink)}
+.btn.opt.right{background:var(--green)!important;color:#000}
+.btn.opt.wrong{background:var(--red)!important;color:#fff}
+.btn.opt[disabled]{cursor:default}
+.btn.small{font-size:14px;padding:5px 10px}
+.btn[disabled]{background:var(--dgray);color:var(--lgray);cursor:not-allowed;filter:none}
+.btn[disabled]:active{transform:none}
+.btn.big{font-size:20px;padding:14px 26px;min-width:240px}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.center{text-align:center}
+.mt{margin-top:12px}
+.muted{color:var(--dgray);font-size:14px}
+.box.dark .muted{color:var(--lgray)}
+
+/* 動畫 */
+.screen{animation:pop .25s steps(4)}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes blink{50%{opacity:.25}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes flip{0%{transform:perspective(600px) rotateY(90deg)}100%{transform:perspective(600px) rotateY(0)}}
+@keyframes fall{from{transform:translateY(-30px)}to{transform:translateY(110vh)}}
+.blink{animation:blink 1s steps(1) infinite}
+
+/* 標題 */
+.title-logo{font-size:44px;letter-spacing:4px;line-height:1.35;color:var(--yellow);text-shadow:4px 4px 0 var(--plum),8px 8px 0 var(--black);margin:28px 0 8px}
+.title-sub{font-size:14px;letter-spacing:6px;color:var(--peach);margin-bottom:18px}
+.title-chars{display:flex;justify-content:center;gap:24px;margin:16px 0}
+.title-chars canvas{animation:bob 1.2s steps(2) infinite}
+.title-chars canvas:nth-child(2){animation-delay:.6s}
+.menu-col{display:flex;flex-direction:column;align-items:center;gap:8px}
+.coins{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
+.coin{position:absolute;top:0;width:12px;height:12px;background:var(--yellow);box-shadow:inset -3px -3px 0 var(--orange),0 0 0 2px #000;animation:fall linear infinite}
+.burst{position:fixed;inset:0;pointer-events:none;z-index:80;overflow:hidden}
+.burst .coin{animation:fall 1.4s steps(14) forwards}
+
+/* 狀態列 */
+.hud{display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;background:#10183a;padding:8px 12px;margin:8px var(--px) 4px;box-shadow:0 -4px 0 0 #000,0 4px 0 0 #000,-4px 0 0 0 #000,4px 0 0 0 #000;position:sticky;top:4px;z-index:20}
+.hud .who{display:flex;align-items:center;gap:8px;font-size:16px}
+.hud .stat{font-size:14px;white-space:nowrap}
+.hud .stat b{color:var(--yellow);font-weight:normal}
+.hud .stat b.neg{color:var(--red)}
+.hud .spacer{flex:1}
+.hbar{display:inline-block;width:70px;height:12px;background:var(--dgray);vertical-align:middle;box-shadow:0 0 0 2px #000}
+.hbar i{display:block;height:100%;background:var(--pink)}
+.saved{position:fixed;right:16px;top:16px;background:var(--green);color:#000;padding:6px 12px;z-index:90;box-shadow:0 0 0 3px #000;animation:blink .3s steps(1) 3}
+
+/* 景氣燈號：像素圓燈 */
+.lamps{display:flex;gap:8px;align-items:center}
+.lamp{width:30px;height:30px;clip-path:polygon(30% 0,70% 0,70% 10%,90% 10%,90% 30%,100% 30%,100% 70%,90% 70%,90% 90%,70% 90%,70% 100%,30% 100%,30% 90%,10% 90%,10% 70%,0 70%,0 30%,10% 30%,10% 10%,30% 10%);opacity:.22}
+.lamp.on{opacity:1;animation:blink 1s steps(1) infinite;width:44px;height:44px}
+.lamp-label{font-size:12px;text-align:center}
+.lampcol{display:flex;flex-direction:column;align-items:center;gap:2px}
+.light{display:inline-block;width:16px;height:16px;vertical-align:-2px;box-shadow:0 0 0 2px #000;margin-right:6px}
+.paper{background:#f4e9d2;color:#222}
+.paper .mast{font-family:var(--font);font-size:15px;letter-spacing:1px;border-bottom:4px double #222;padding-bottom:6px;margin-bottom:8px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.headline{font-size:22px;line-height:1.4;margin:6px 0}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.kv div{background:rgba(0,0,0,.06);padding:6px 10px}
+.box.dark .kv div{background:rgba(255,255,255,.07)}
+.kv b{display:block;font-size:20px;font-weight:normal}
+
+/* 名詞：虛線底線＋問號 */
+.term{color:var(--plum);border-bottom:2px dashed var(--plum);cursor:help;font-weight:bold;white-space:nowrap}
+.term::after{content:'?';display:inline-block;font-size:10px;line-height:13px;width:13px;height:13px;text-align:center;background:var(--plum);color:var(--white);margin-left:2px;vertical-align:2px;font-family:var(--font)}
+.box.dark .term,.hud .term{color:var(--pink);border-color:var(--pink)}
+.box.dark .term::after{background:var(--pink);color:#000}
+.wk{display:inline-block;font-size:11px;background:var(--navy);color:var(--yellow);padding:0 6px;margin-left:4px;vertical-align:middle;white-space:nowrap}
+
+/* 滑桿 */
+.slider{display:grid;grid-template-columns:120px 1fr 60px 110px;align-items:center;gap:10px;margin:12px 0}
+.slider label{font-size:16px}
+.slider .pct{text-align:right}
+.slider .amt{font-size:14px;text-align:right;color:var(--dgray)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:16px;background:var(--lgray);box-shadow:0 0 0 3px #000;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:30px;background:var(--c,var(--orange));box-shadow:0 0 0 3px #000,inset -4px -4px 0 rgba(0,0,0,.3);border:none;border-radius:0}
+input[type=range]::-moz-range-thumb{width:24px;height:30px;background:var(--c,var(--orange));box-shadow:0 0 0 3px #000;border:none;border-radius:0}
+input[type=range]:focus-visible{outline:3px dashed var(--plum);outline-offset:4px}
+.remain{font-size:18px;padding:8px 12px;display:inline-block;background:var(--green);box-shadow:0 0 0 3px #000}
+.remain.bad{background:var(--red);color:var(--white)}
+.remain.shake{animation:shake .2s steps(2) 2}
+.alloc-bar{display:flex;height:22px;box-shadow:0 0 0 3px #000;margin:10px 0;background:var(--lgray)}
+.alloc-bar span{display:block;height:100%}
+
+/* 表格 */
+table{border-collapse:collapse;width:100%;font-size:15px}
+td,th{padding:5px 8px;border-bottom:2px dashed rgba(0,0,0,.2);text-align:left;vertical-align:top}
+td.num,th.num{text-align:right;white-space:nowrap}
+.pos{color:var(--dgreen)} .neg{color:var(--red)}
+.box.dark .pos{color:var(--green)}
+.box.dark td,.box.dark th{border-color:rgba(255,255,255,.18)}
+.sw{display:inline-block;width:12px;height:12px;box-shadow:0 0 0 2px #000;margin-right:6px;vertical-align:-1px}
+
+/* 事件卡、抉擇卡（翻牌） */
+.card{background:var(--peach);padding:14px 16px;margin:14px 4px;box-shadow:0 0 0 4px #000,6px 6px 0 4px rgba(0,0,0,.35);animation:flip .5s steps(5)}
+.card .ct{font-size:18px;font-weight:bold;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card .icon{font-size:28px;line-height:1}
+.card.choice{background:var(--yellow)}
+.card .lesson{margin-top:6px;font-size:14px;background:rgba(0,0,0,.08);padding:4px 8px}
+
+/* 選項 */
+.opt{display:block;width:calc(100% - 8px);text-align:left;margin:12px 4px}
+.quiz-q{font-size:20px;margin:8px 0 12px}
+.progress{display:flex;gap:6px;margin:8px 0 14px}
+.progress i{flex:1;height:14px;background:var(--lgray);box-shadow:0 0 0 3px #000}
+.progress i.done{background:var(--green)}
+
+/* 角色 */
+canvas.sprite{image-rendering:pixelated;image-rendering:crisp-edges}
+.gender-pick{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+.gcard,.mcard{background:var(--white);padding:12px 16px;cursor:pointer;text-align:center;box-shadow:0 0 0 4px #000;border:none;font-family:inherit;font-size:17px;color:#000}
+.mcard{width:min(260px,100%);line-height:1.5}.mcard .micon{font-size:30px}
+.gcard.sel,.mcard.sel{background:var(--yellow);box-shadow:0 0 0 4px #000,0 0 0 8px var(--orange)}
+.gcard.sel canvas{animation:bob .8s steps(2) infinite}
+.name-input{font-family:var(--font);font-size:22px;padding:8px 12px;width:min(320px,100%);border:none;box-shadow:0 0 0 4px #000;background:#fff;outline:none;margin:4px}
+.name-input:focus{box-shadow:0 0 0 4px #000,0 0 0 8px var(--blue)}
+.err{color:var(--red);font-size:15px;min-height:24px}
+
+/* 圖表 */
+.chart-cv{width:100%;height:270px;display:block;background:#10183a;box-shadow:0 0 0 4px #000}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;margin-top:12px}
+.legend i{display:inline-block;width:14px;height:14px;margin-right:4px;vertical-align:-2px;box-shadow:0 0 0 2px #000}
+
+/* 結局 */
+.grade{font-family:var(--font);font-size:110px;line-height:1;text-shadow:6px 6px 0 #000;animation:bob 1s steps(2) infinite;display:inline-block}
+.g-S{color:var(--yellow)} .g-A{color:var(--green)} .g-B{color:var(--blue)} .g-C{color:var(--orange)} .g-D{color:var(--red)}
+.comment{background:var(--white);color:#000;padding:10px 14px;margin:12px 4px;box-shadow:0 0 0 3px #000;border-left:10px solid var(--orange)}
+
+/* 存檔欄 */
+.slot{display:flex;align-items:center;gap:12px;background:var(--white);color:#000;padding:10px 12px;margin:14px 4px;box-shadow:0 0 0 4px #000;flex-wrap:wrap}
+.slot .info{flex:1;min-width:160px}
+.slot.empty{background:var(--lgray);color:var(--dgray)}
+.tag{display:inline-block;font-size:12px;padding:0 6px;background:var(--green);color:#000;margin-left:6px;box-shadow:0 0 0 2px #000}
+textarea{width:100%;font-family:monospace;font-size:13px;padding:8px;border:none;box-shadow:0 0 0 3px #000;min-height:80px;resize:vertical;margin:4px 0}
+
+/* 彈窗、提示 */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{max-width:560px;width:100%;max-height:88vh;overflow:auto;animation:pop .2s steps(3)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--black);color:var(--yellow);padding:10px 18px;box-shadow:0 0 0 4px var(--yellow);z-index:95;font-size:16px;max-width:90vw;text-align:center}
+.tip{position:absolute;z-index:99;max-width:300px;background:var(--black);color:var(--white);padding:10px 12px;font-size:15px;box-shadow:0 0 0 3px var(--yellow),6px 6px 0 3px rgba(0,0,0,.4)}
+.tip b{color:var(--yellow)}
+.tip .ex{margin-top:6px;color:var(--peach)}
+.rank-table td,.rank-table th{font-size:14px;vertical-align:middle}
+.rank-1 td{background:rgba(255,236,39,.35)}
+.delta{font-size:12px;margin-left:4px}
+/* v0.7：場景、燈號變化、快問快答、人生目標、徽章 */
+.scene-wrap{position:relative;margin:14px 4px 0}
+.scene{display:block;width:100%;margin:0;aspect-ratio:128/40;image-rendering:pixelated;image-rendering:crisp-edges;box-shadow:0 0 0 4px #000;background:#83769C}
+.scene-hint{font-size:13px;color:var(--lgray);text-align:right;margin:8px 6px -4px}
+.say{position:absolute;top:8px;transform:translateX(-50%);background:var(--white);color:#000;font-size:15px;line-height:1.5;padding:6px 10px;box-shadow:0 0 0 3px #000,4px 4px 0 3px rgba(0,0,0,.35);width:max-content;max-width:min(340px,72%);pointer-events:none;animation:pop .2s steps(3);z-index:5}
+.say.below{position:relative;top:auto;transform:none;margin-top:14px;width:auto;max-width:none;animation:none}
+.say.below::after{bottom:auto;top:-11px;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.say::after{content:'';position:absolute;left:var(--tail,50%);bottom:-11px;width:12px;height:8px;background:#000;clip-path:polygon(0 0,100% 0,50% 100%)}
+.lchange{display:inline-block;background:#000;color:var(--yellow);padding:4px 12px;margin-top:8px;animation:blink .4s steps(1) 4}
+.lchange .light{margin-left:4px}
+.lamp.was{opacity:.55;outline:2px dashed #000;outline-offset:2px}
+.lamp.on{animation:lampIn .6s steps(3),blink 1s steps(1) .6s infinite}
+@keyframes lampIn{0%{transform:scale(.4)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.quizbox .ct{font-size:18px;font-weight:bold}
+.card.okc{background:var(--green)} .card.noc{background:var(--peach)}
+.goal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:12px 4px}
+.goal{background:var(--white);color:#000;border:none;font-family:inherit;font-size:16px;padding:12px;text-align:left;cursor:pointer;box-shadow:0 0 0 4px #000;display:flex;flex-direction:column;gap:4px}
+.goal small{color:var(--dgray);font-size:14px;line-height:1.5}
+.goal.sel{background:var(--yellow);box-shadow:0 0 0 4px #000,0 0 0 8px var(--orange)}
+.goal:hover{filter:brightness(1.05)}
+.gicon{font-size:30px;line-height:1}
+.goal-res{display:flex;gap:12px;align-items:center;background:var(--lgray);padding:10px 12px;box-shadow:0 0 0 3px #000;margin:8px 4px}
+.goal-res.ok{background:var(--yellow)}
+.goal-tag{background:var(--yellow);color:#000;padding:0 6px}
+.goal-tag:empty{display:none}
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin:10px 4px}
+.badge{background:var(--lgray);color:var(--dgray);padding:10px;text-align:center;box-shadow:0 0 0 3px #000;display:flex;flex-direction:column;gap:2px}
+.badge.got{background:var(--white);color:#000;box-shadow:0 0 0 3px #000,inset 0 0 0 3px var(--yellow)}
+.badge .bicon{font-size:32px;line-height:1.2}
+.badge small{font-size:12px;line-height:1.4}
+.badge-pop{position:fixed;right:16px;top:64px;z-index:96;display:flex;gap:10px;align-items:center;background:var(--yellow);color:#000;padding:10px 16px;box-shadow:0 0 0 4px #000,6px 6px 0 4px rgba(0,0,0,.4);animation:pop .3s steps(3)}
+.badge-pop .bicon{font-size:32px}
+.code-share{background:var(--navy);color:var(--white);padding:8px 12px}
+.code-share b{color:var(--yellow)}
+/* 背景音樂開關 */
+.music-btn{position:fixed;left:12px;bottom:12px;z-index:60;font-family:var(--font);font-size:15px;background:var(--yellow);color:#000;border:none;cursor:pointer;padding:6px 12px;box-shadow:0 0 0 3px #000,4px 4px 0 3px rgba(0,0,0,.4)}
+.music-btn.off{background:var(--lgray);color:var(--dgray)}
+.music-btn:active{transform:translateY(2px)}
+.music-btn .eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px;margin-right:6px;vertical-align:-1px}
+.music-btn .eq i{display:block;width:3px;background:#000;animation:eq .6s steps(3) infinite}
+.music-btn .eq i:nth-child(2){animation-delay:.2s}.music-btn .eq i:nth-child(3){animation-delay:.4s}
+.music-btn.off .eq i{animation:none;height:3px;background:var(--dgray)}
+@keyframes eq{0%{height:3px}50%{height:12px}100%{height:6px}}
+
+@media (max-width:600px){
+  body{font-size:16px}
+  #app{padding:10px 12px 40px}
+  .title-logo{font-size:33px}
+  .slider{grid-template-columns:96px 1fr 50px;gap:8px;margin:16px 0}
+  .slider .amt{grid-column:2/4;text-align:left;margin-top:2px}
+  input[type=range]{height:22px}
+  input[type=range]::-webkit-slider-thumb{width:30px;height:36px}
+  .headline{font-size:19px}
+  .btn{padding:12px 16px}
+  .btn.big{min-width:200px;font-size:18px}
+  .grade{font-size:77px}
+  .hud{gap:2px 10px;padding:6px 8px}
+  .hud .stat{font-size:12px}
+  table{font-size:13px}
+  td,th{padding:4px 4px}
+  .box{padding:14px 14px}
+  .lamp{width:22px;height:22px} .lamp.on{width:34px;height:34px}
+  .chart-cv{height:230px}
+}
+</style>
+</head>
+<body>
+<div class="coins" id="coins"></div>
+<button class="music-btn" id="musicBtn" onclick="BGM.toggle()" aria-label="背景音樂與音效開關"><span class="eq"><i></i><i></i><i></i></span><span id="musicTxt">聲音：開</span></button>
+<div id="app">
+
+<!-- ===== 開始畫面 ===== -->
+<section id="s-title" class="screen center">
+  <h1 class="title-logo pf">像素理財人生</h1>
+  <div class="title-sub pf">FROM 18 TO 28</div>
+  <div class="title-chars" id="titleChars"></div>
+  <p style="margin-bottom:18px">從高三畢業開始的十年，你會怎麼用錢？</p>
+  <div class="menu-col">
+    <button class="btn big green" onclick="goCreate()">▶ 新遊戲</button>
+    <button class="btn big" id="btnContinue" onclick="showLoad()">繼續遊戲</button>
+    <button class="btn big blue" onclick="show('s-help')">遊戲說明</button>
+    <button class="btn big gray" onclick="showRank()">🏆 排行榜</button>
+    <button class="btn big pink" id="btnBadges" onclick="showBadges()">🏅 徽章收藏</button>
+  </div>
+  <p class="mt"><a href="#" style="color:var(--peach);font-size:14px" onclick="showLoad();return false">換電腦了？按這裡匯入存檔碼</a></p>
+  <p class="pf blink mt" style="font-size:14px;color:var(--yellow)">PRESS START</p>
+</section>
+
+<!-- ===== 建立角色 ===== -->
+<section id="s-create" class="screen hidden">
+  <div class="box">
+    <h2>建立角色</h2>
+    <h3>1. 選擇性別</h3>
+    <div class="gender-pick">
+      <button class="gcard" data-g="m" onclick="pickGender('m')"><canvas class="sprite" id="pvM" width="16" height="16" style="width:80px;height:80px"></canvas><div>男生</div></button>
+      <button class="gcard" data-g="f" onclick="pickGender('f')"><canvas class="sprite" id="pvF" width="16" height="16" style="width:80px;height:80px"></canvas><div>女生</div></button>
+    </div>
+    <p class="muted center mt">性別只影響角色外觀，不影響薪水、事件或評分。</p>
+    <h3>2. 輸入名字（1～8 個字）</h3>
+    <input class="name-input" id="nameInput" maxlength="20" placeholder="例如：小明" autocomplete="off">
+    <p class="muted">名字會顯示在排行榜，課堂上建議用網名。</p>
+    <h3>3. 遊戲模式</h3>
+    <div class="gender-pick">
+      <button class="mcard" data-m="free" onclick="pickMode('free')"><div class="micon">🎲</div><b>自由模式</b><div class="muted">每一場的十年景氣都不一樣</div></button>
+      <button class="mcard" data-m="class" onclick="pickMode('class')"><div class="micon">🏫</div><b>班級對戰</b><div class="muted">輸入老師給的代碼，全班同一段景氣，比誰的決策最好</div></button>
+    </div>
+    <div id="codeWrap" class="hidden center mt"><input class="name-input" id="codeInput" inputmode="numeric" maxlength="8" placeholder="班級代碼，例如 1103" autocomplete="off"></div>
+    <p class="err" id="nameErr"></p>
+    <div class="row">
+      <button class="btn gray" onclick="show('s-title')">◀ 返回</button>
+      <button class="btn green" id="btnCreate" onclick="confirmCreate()">下一步 ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 風險屬性測驗 ===== -->
+<section id="s-quiz" class="screen hidden">
+  <div class="box">
+    <h2>我是哪種投資人？<span class="wk">第 6 週</span></h2>
+    <div class="progress" id="quizBar"></div>
+    <div id="quizBody"></div>
+  </div>
+</section>
+
+<!-- ===== 狀態列 ===== -->
+<div id="hud" class="hud hidden">
+  <div class="who"><canvas class="sprite" id="hudAvatar" width="16" height="16" style="width:40px;height:40px"></canvas><span id="hudName"></span></div>
+  <div class="stat goal-tag" id="hudGoal"></div>
+  <div class="stat"><b id="hudAge"></b> 歲・<span id="hudPhase"></span>・第 <b id="hudYear"></b>/10 年</div>
+  <div class="stat"><span class="sw" style="background:#00E436"></span>現金 <b id="hudCash"></b></div>
+  <div class="stat"><span class="sw" style="background:#83769C"></span>債券 <b id="hudBond"></b></div>
+  <div class="stat"><span class="sw" style="background:#FFEC27"></span>股票 ETF <b id="hudStock"></b></div>
+  <div class="stat"><span class="sw" style="background:#FF004D"></span>負債 <b id="hudDebt"></b></div>
+  <div class="stat">幸福 <span class="hbar"><i id="hudHappy"></i></span> <b id="hudHappyN"></b></div>
+  <div class="spacer"></div>
+  <button class="btn small blue" onclick="openTerms()">📖 名詞</button>
+  <button class="btn small" onclick="openMenu()">☰ 選單</button>
+</div>
+
+<section id="s-news" class="screen hidden"></section>
+<section id="s-alloc" class="screen hidden"></section>
+<section id="s-result" class="screen hidden"></section>
+<section id="s-grad" class="screen hidden"></section>
+<section id="s-end" class="screen hidden"></section>
+<section id="s-rank" class="screen hidden"></section>
+<section id="s-load" class="screen hidden"></section>
+<section id="s-help" class="screen hidden"></section>
+<section id="s-goal" class="screen hidden"></section>
+<section id="s-badges" class="screen hidden"></section>
+
+</div>
+
+<script>
+/* =====================================================
+   基本工具
+===================================================== */
+const $ = s => document.querySelector(s);
+const fmt = n => Math.round(n).toLocaleString('zh-TW');
+const money = n => (Math.round(n) < 0 ? '−' : '') + '$' + fmt(Math.abs(n));
+const signMoney = n => (Math.round(n) >= 0 ? '+' : '−') + '$' + fmt(Math.abs(n));
+const pct = (n, d = 1) => (n >= 0 ? '+' : '−') + Math.abs(n * 100).toFixed(d) + '%';
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const FEE = 0.001425, ETF_TAX = 0.001, STOCK_TAX = 0.003, CARD_RATE = 0.15;
+const KEYS = ['fun', 'dep', 'bond', 'stk', 'ins'];
+const KNAME = {fun:'享樂消費', dep:'定存', bond:'債券', stk:'股票 ETF', ins:'保險'};
+/* 配色：粉＝享樂、綠＝定存、淺紫＝債券、黃＝股票、淺藍＝保險、紅＝負債 */
+const KCOL  = {fun:'#FF77A8', dep:'#00E436', bond:'#83769C', stk:'#FFEC27', ins:'#29ADFF'};
+const PRESET = {
+  '趨避型': {fun:25, dep:40, bond:20, stk:10, ins:5},
+  '中立型': {fun:25, dep:20, bond:20, stk:30, ins:5},
+  '愛好型': {fun:25, dep:10, bond:10, stk:50, ins:5}
+};
+
+/* =====================================================
+   景氣燈號（第四節燈號表）：0 紅 → 4 藍
+===================================================== */
+const LIGHTS = [
+  {n:'紅燈', s:'過熱', cb:'鷹派，升息', hawk:true,  dep:.02,   bond:-.02, stk:[-.25,.05], cpi:.04,  c:['#FF004D','#FF004D'],
+   head:'景氣過熱！人人搶股票，央行升息打通膨',
+   say:'景氣過熱、物價漲很快，央行升息想讓大家少借錢、少花錢。升息時，舊債券的價格會下跌；股價常常已經很貴，要小心。'},
+  {n:'黃紅燈', s:'轉熱', cb:'偏鷹，升息', hawk:true, dep:.0175, bond:-.01, stk:[-.10,.10], cpi:.03, c:['#FFEC27','#FF004D'],
+   head:'景氣轉熱，央行小幅升息踩煞車',
+   say:'景氣開始變熱，央行小幅升息。利率上升時，舊債券的價格會下跌。'},
+  {n:'綠燈', s:'穩定', cb:'不動', dep:.015, bond:.03, stk:[-.05,.15], cpi:.02, c:['#00E436','#00E436'],
+   head:'景氣穩穩走，央行按兵不動',
+   say:'景氣穩定，央行維持利率不變。債券和股票都有溫和的表現。'},
+  {n:'黃藍燈', s:'轉弱', cb:'偏鴿，降息', dove:true, dep:.0125, bond:.05, stk:[0,.20], cpi:.01, c:['#FFEC27','#29ADFF'],
+   head:'景氣轉弱，央行降息刺激經濟',
+   say:'景氣轉弱，央行降息讓借錢變便宜。降息時，舊債券的價格會上漲；股價常常已經跌了一段。'},
+  {n:'藍燈', s:'低迷', cb:'鴿派，降息', dove:true, dep:.01, bond:.06, stk:[.10,.30], cpi:.005, c:['#29ADFF','#29ADFF'],
+   head:'景氣低迷！大家都說股市完了，央行大降息',
+   say:'景氣低迷、大家很悲觀，央行大幅降息救經濟。降息讓債券上漲；而大家最悲觀的時候，股價往往比較便宜。'}
+];
+
+/* =====================================================
+   名詞小提示（第七節第 3 點）
+===================================================== */
+const TERMS = {
+  '逆選擇':        {w:2,  d:'交易前資訊不對稱：賣方知道得比你多，你容易買到爛東西。', ex:'二手車行最想賣掉的，常常是車主自己知道有毛病的車。'},
+  '道德危險':      {w:2,  d:'交易後行為改變：有了保障就變得比較不小心。', ex:'買了手機險後，用手機變得很隨便，反正壞了有人賠。'},
+  '檸檬問題':      {w:2,  d:'因為買方分不出好壞，好東西賣不到好價錢，市場上剩下爛貨（檸檬）。', ex:'二手機車外表都一樣亮，你只能用平均價出價，車況好的車主就不想賣了。'},
+  'CPI':           {w:3,  d:'消費者物價指數，看一般人常買的東西價格漲了多少。', ex:'CPI 年增 3%，就像 100 元的便當變成 103 元。'},
+  '通貨膨脹':      {w:3,  d:'東西普遍變貴，同樣的錢能買的東西變少。簡稱通膨。', ex:'去年 1,000 元能買 10 杯飲料，今年只能買 9 杯。'},
+  '景氣對策信號':  {w:3,  d:'國發會用九項指標每月打分數，用紅、黃紅、綠、黃藍、藍五種燈號表示景氣冷熱，又叫景氣燈號。', ex:'就像體溫計：紅燈是發燒，藍燈是體溫太低。'},
+  '名目與實質利率':{w:3,  d:'名目利率是銀行寫的利率；實質利率＝名目利率－通膨率，才是真正多買得到的東西。', ex:'定存 1.5%、物價漲 2%，其實你的錢變薄了 0.5%。'},
+  '失業率':        {w:4,  d:'想工作卻找不到工作的人，占所有勞動力的比例。景氣差時會上升。', ex:'100 個想上班的人裡有 4 個找不到工作，失業率就是 4%。'},
+  '逆向操作':      {w:4,  d:'跟大家的情緒反著做：景氣低迷（藍燈）時加碼，景氣過熱（紅燈）時減碼。', ex:'百貨週年慶大家搶貨很貴，換季清倉沒人買時反而便宜。'},
+  '匯率':          {w:4,  d:'兩種貨幣交換的比例。', ex:'1 美元換 32 台幣，匯率就是 32。'},
+  '升值':          {w:4,  d:'台幣變得比較「值錢」，同樣的台幣能換到更多外幣。', ex:'台幣升值時，去日本玩同樣的錢能換更多日圓。'},
+  '貶值':          {w:4,  d:'台幣變得比較不值錢，換到的外幣變少；但出口公司把外幣換回台幣會變多。', ex:'出口公司賣 1 萬美元的貨，貶值後換回的台幣變多，年終也變多。'},
+  '升息':          {w:5,  d:'央行把利率調高。存款利息變多、借錢變貴，用來壓住通膨。', ex:'房貸、卡債的利息變高，大家就比較不敢亂花錢。'},
+  '降息':          {w:5,  d:'央行把利率調低。借錢變便宜，鼓勵消費投資，用來刺激景氣。', ex:'定存利息變少，大家比較願意把錢拿去花或投資。'},
+  '鷹派':          {w:5,  d:'央行官員比較在意通膨，傾向升息，態度強硬。', ex:'像嚴格的老師，寧可大家辛苦一點也要守住秩序。'},
+  '鴿派':          {w:5,  d:'央行官員比較在意景氣和就業，傾向降息，態度溫和。', ex:'像溫和的老師，先讓大家喘口氣再說。'},
+  '複利':          {w:6,  d:'利息也會再生利息，像滾雪球。時間越長效果越大。', ex:'100 元每年賺 10%，第二年是用 110 元去賺，不是 100 元。'},
+  '72法則':        {w:6,  d:'72 ÷ 年報酬率（%）≈ 錢翻倍要幾年。', ex:'年報酬 6% 約 12 年翻倍；定存 1.5% 要 48 年。'},
+  '實質報酬':      {w:6,  d:'扣掉通膨之後，真正多賺到的購買力。', ex:'投資賺 5%、物價漲 2%，實質報酬約 3%。'},
+  '分散投資':      {w:6,  d:'把錢分到不同資產，不要雞蛋放同一個籃子。', ex:'股票跌的年份，債券常常是漲的，總資產比較不會大起大落。'},
+  '資產配置':      {w:6,  d:'決定錢要怎麼分配到現金、債券、股票等不同資產。', ex:'就像便當要有飯、菜、肉，比例看自己的需要。'},
+  '風險趨避':      {w:6,  d:'討厭風險，寧可少賺一點也要穩定的個性。', ex:'寧願確定拿 100 元，也不要一半機率拿 250 元、一半拿 0 元。'},
+  '手續費':        {w:7,  d:'買賣股票、ETF 時付給券商的費用，公定費率 0.1425%。', ex:'買 10,000 元的 ETF，手續費約 14 元。'},
+  '證券交易稅':    {w:7,  d:'賣出股票時要繳的稅，簡稱證交稅。個股 0.3%，股票型 ETF 0.1%。只有賣出才收。', ex:'賣掉 10,000 元的 ETF 要繳 10 元證交稅。'},
+  '配息':          {w:7,  d:'公司或 ETF 把賺到的錢分一部分給持有人。遊戲中股票報酬已含配息再投入。', ex:'就像存錢筒每年自己多長出一點零錢。'},
+  'ETF':           {w:9,  d:'指數股票型基金，一次買進一籃子股票，例如台灣前 50 大公司。', ex:'像買綜合水果盒，不用自己挑每一顆。'},
+  '被動投資':      {w:9,  d:'不挑個股、不猜漲跌，買進代表整體市場的 ETF 長期持有。', ex:'不追著哪家店最紅，而是整條商店街都投資一點。'},
+  '定期定額':      {w:9,  d:'每期固定投入一樣的錢，不管漲跌都買，靠紀律平均成本。', ex:'每月固定買 3,000 元，便宜時自然買到比較多單位。'},
+  '債券':          {w:10, d:'借錢給政府或公司的借據，會定期收利息。遊戲中模擬債券基金。', ex:'你借同學 100 元，約好每年還你 3 元利息。'},
+  '利率與債券價格反向': {w:10, d:'市場利率上升，舊債券的利息相對變少、價格下跌；利率下降時相反。', ex:'新發的債券給 5%，你手上只給 2% 的舊債券就沒人想買，只好降價。'},
+  'K線':           {w:11, d:'用一根根小柱子畫出股價每天的開盤、收盤、最高、最低價。', ex:'就像每天的體溫紀錄圖，只是記的是股價。'},
+  '黃金交叉':      {w:11, d:'短期均線由下往上穿過長期均線，常被說是買進訊號，但不保證會漲。', ex:'最近一週的平均成績超過整學期平均，不代表下次一定考高分。'},
+  '外資買賣超':    {w:11, d:'外國機構投資人買進比賣出多（買超）或少（賣超），屬於籌碼分析。', ex:'看到很多人排隊買某家飲料，不代表它一定好喝。'},
+  'EPS':           {w:12, d:'每股盈餘，公司每一股賺多少錢。連年是負的，表示公司一直在虧錢。', ex:'一家店分成 100 股，今年賺 1,000 元，EPS 就是 10 元。'},
+  '財務報表':      {w:12, d:'公司的成績單，記錄賺多少、欠多少、現金流向。', ex:'看一家店值不值得投資，要先看它的帳本。'},
+  '融資':          {w:13, d:'跟券商借錢買股票，是一種槓桿，要付利息。', ex:'自己出 4 萬、借 6 萬，買 10 萬元的股票。'},
+  '槓桿':          {w:13, d:'用借來的錢放大投資部位。賺的放大，賠的也放大。', ex:'股票跌 10%，用 2.5 倍槓桿就變成賠 25%。'},
+  '斷頭':          {w:13, d:'融資買的股票跌太多，擔保品不夠，券商強制賣掉你的股票。', ex:'押金賠光了，店家就把東西收回去。'},
+  '內線交易':      {w:14, d:'知道公司還沒公開的重大消息就去買賣股票。在台灣是違法的，會被罰款甚至坐牢。', ex:'考試前偷看到答案再去考，不公平也違規。'},
+  '資訊揭露':      {w:14, d:'公司要把重大消息同時公開給所有投資人，讓大家公平取得資訊。', ex:'老師公布成績要全班一起公布，不能只先告訴某些人。'},
+  '緊急預備金':    {w:15, d:'放在隨時拿得到的地方、可以撐 3～6 個月生活費的錢。', ex:'失業或住院時，不用賤賣股票或刷卡借錢。'},
+  '可支配所得':    {w:15, d:'收入扣掉必要生活費後，可以自己決定怎麼用的錢。', ex:'每月收入 35,000，生活費 22,000，可支配就是 13,000。'},
+  '循環利息':      {w:15, d:'信用卡沒繳清時，剩下的錢會用很高的利率計息（遊戲設定年利率 15%）。', ex:'欠 27,000 元一年後，光利息就要 4,050 元。'},
+  '最低應繳金額':  {w:15, d:'信用卡帳單上「至少要繳」的金額，通常只有一成左右，剩下的會開始算循環利息。', ex:'帳單 30,000 元，最低應繳 3,000 元，剩下 27,000 元變成欠款。'},
+  '生命週期':      {w:15, d:'人生不同階段（求學、工作、成家、退休）收入和支出都不一樣，理財方式也要跟著調整。', ex:'大學靠家裡和打工，上班後收入變多但要自己付房租。'},
+  '退休規劃':      {w:15, d:'提早估算退休後需要多少錢，並從現在開始準備。', ex:'越早開始存，複利能幫你滾越久。'},
+  '損失趨避':      {w:16, d:'賠錢的痛苦比賺錢的快樂強烈，讓人容易在大跌時恐慌賣出。', ex:'掉 1,000 元的難過，遠大於撿到 1,000 元的開心。'},
+  '投資詐騙':      {w:16, d:'用「保證獲利、穩賺不賠、老師帶單」等話術騙你匯款。', ex:'真的穩賺不賠的方法，別人不會免費教你。'},
+  '165反詐騙專線': {w:16, d:'內政部警政署的反詐騙諮詢專線，接到可疑訊息先打 165 查證。', ex:'收到奇怪的簡訊或投資邀請，打 165 問問看。'}
+};
+const tm = (k, label) => `<span class="term" data-t="${k}" tabindex="0">${label || k}</span>`;
+function lesson(w, txt) { return `<div class="lesson">📘 第 ${w} 週：${txt}</div>`; }
+
+/* =====================================================
+   像素角色（16×16），男生、女生各一組
+===================================================== */
+const SPR = {
+  m: [
+    '................',
+    '.....KKKKKK.....',
+    '....KHHHHHHK....',
+    '...KHHHHHHHHK...',
+    '...KHSSSSSSHK...',
+    '...KSSSSSSSSK...',
+    '...KSESSSSESK...',
+    '...KSSSSSSSSK...',
+    '...KSSSSSSSSK...',
+    '....KSSSSSSK....',
+    '...KWWWWWWWWK...',
+    '..KSWWWWWWWWSK..',
+    '..KSWWWWWWWWSK..',
+    '...KBBBBBBBBK...',
+    '...KBBBKKBBBK...',
+    '...KKKK..KKKK...'],
+  f: [
+    '................',
+    '.....KKKKKK.....',
+    '....KHHHHHHK....',
+    '...KHHHHHHHHK...',
+    '..KHHSSSSSSHHK..',
+    '..KHSSSSSSSSHK..',
+    '..KHSESSSSESHK..',
+    '..KHSSSSSSSSHK..',
+    '..KHSSSSSSSSHK..',
+    '..KHHKSSSSKHHK..',
+    '...KWWWWWWWWK...',
+    '..KSWWWWWWWWSK..',
+    '..KSWWWWWWWWSK..',
+    '..KFFFFFFFFFFK..',
+    '....KSSK.KSSK...',
+    '....KKKK.KKKK...']
+};
+const PAL = {K:'#000000', S:'#FFCCAA', E:'#000000', W:'#FFF1E8', B:'#1D2B53', F:'#FF77A8', R:'#FF004D', P:'#008751', C:'#FF77A8', Y:'#FFEC27', T:'#29ADFF'};
+function spriteGrid(g, opt = {}) {
+  const grid = SPR[g === 'f' ? 'f' : 'm'].map(r => r.split(''));
+  const mood = opt.mood ?? 60, off = g === 'f' ? 1 : 0;
+  // 表情：開心（≥70）、普通、難過（<30）
+  if (mood >= 70) { grid[8][6]='K'; grid[8][9]='K'; grid[9][7]='K'; grid[9][8]='K'; grid[7][4+off]='C'; grid[7][11-off]='C'; }
+  else if (mood >= 30) { grid[8][7]='K'; grid[8][8]='K'; }
+  else { grid[8][7]='K'; grid[8][8]='K'; grid[9][6]='K'; grid[9][9]='K'; grid[7][5]='T'; }
+  // 大學背書包、上班打領帶、畢業戴方帽
+  if (opt.phase === 'work') { grid[10][7]='R'; grid[10][8]='R'; grid[11][7]='R'; grid[11][8]='R'; grid[12][7]='R'; grid[12][8]='R'; }
+  else if (opt.phase === 'college') { [10,11,12].forEach(y => { grid[y][5]='P'; grid[y][10]='P'; }); grid[11][1]='P'; grid[12][1]='P'; grid[11][14]='P'; grid[12][14]='P'; }
+  else if (opt.phase === 'grad') { for (let x = 3; x <= 12; x++) grid[1][x] = 'K'; for (let x = 5; x <= 10; x++) grid[0][x] = 'K'; grid[2][12]='Y'; grid[3][12]='Y'; }
+  return grid;
+}
+function paintGrid(ctx, grid, g, ox = 0, oy = 0) {
+  const hair = g === 'f' ? '#7E2553' : '#AB5236';
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    const c = grid[y][x]; if (c === '.') continue;
+    ctx.fillStyle = c === 'H' ? hair : PAL[c]; ctx.fillRect(ox + x, oy + y, 1, 1);
+  }
+}
+function drawSprite(cv, g, opt = {}) {
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  cv.width = 16; cv.height = 16;
+  ctx.clearRect(0, 0, 16, 16);
+  paintGrid(ctx, spriteGrid(g, opt), g);
+}
+/* 場景：大學宿舍／上班族辦公室；窗外天氣跟著景氣燈號變 */
+function drawScene(cv) {
+  if (!cv || !S) return;
+  const W = 128, H = 40; cv.width = W; cv.height = H;
+  const c = cv.getContext('2d');
+  const R = (x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
+  const work = isWork(Math.max(S.year, 1)), L = S.light;
+  R(0, 0, W, H, work ? '#C2C3C7' : '#83769C');
+  R(0, 30, W, 10, work ? '#5F574F' : '#AB5236');
+  for (let x = 0; x < W; x += 8) R(x, 30, 1, 10, 'rgba(0,0,0,.25)');
+  R(0, 29, W, 1, '#000');
+  // 窗戶：紅燈＝烈日、綠燈＝晴天、藍燈＝下雨
+  const sky = ['#FFA300', '#FFCCAA', '#29ADFF', '#83769C', '#1D2B53'][L];
+  R(50, 4, 28, 19, '#000'); R(52, 6, 24, 15, sky);
+  if (L === 0) { R(66, 8, 6, 6, '#FF004D'); R(65, 9, 8, 4, '#FF004D'); }
+  if (L === 1) { R(66, 8, 5, 5, '#FFEC27'); }
+  if (L === 2) { R(67, 8, 4, 4, '#FFEC27'); R(54, 12, 8, 2, '#FFF1E8'); R(55, 11, 6, 1, '#FFF1E8'); }
+  if (L === 3) { R(53, 9, 11, 3, '#C2C3C7'); R(62, 13, 11, 3, '#C2C3C7'); }
+  if (L === 4) { R(52, 6, 24, 4, '#5F574F'); for (let i = 0; i < 8; i++) R(53 + i * 3, 11 + (i % 2) * 3, 1, 3, '#29ADFF'); }
+  if (work) { R(52, 15, 4, 6, '#1D2B53'); R(57, 12, 5, 9, '#1D2B53'); R(68, 13, 6, 8, '#1D2B53'); R(58, 14, 1, 1, '#FFEC27'); R(70, 15, 1, 1, '#FFEC27'); }
+  R(63, 6, 1, 15, '#000'); R(52, 13, 24, 1, '#000');
+  if (!work) {
+    // 上下舖、海報、書桌
+    R(4, 9, 30, 2, '#5F574F'); R(4, 9, 2, 21, '#5F574F'); R(32, 9, 2, 21, '#5F574F');
+    R(6, 11, 26, 3, '#FFF1E8'); R(6, 14, 26, 2, '#29ADFF'); R(7, 10, 5, 2, '#FFF1E8');
+    R(4, 21, 30, 2, '#5F574F'); R(6, 23, 26, 3, '#FFF1E8'); R(6, 26, 26, 2, '#FF77A8');
+    R(38, 7, 8, 11, '#000'); R(39, 8, 6, 9, '#FFEC27'); R(40, 10, 4, 4, '#FF004D');
+    R(84, 20, 32, 2, '#AB5236'); R(86, 22, 2, 8, '#7E2553'); R(112, 22, 2, 8, '#7E2553');
+    R(88, 13, 3, 7, '#1D2B53'); R(91, 14, 3, 6, '#FF004D'); R(94, 15, 3, 5, '#00E436');
+    R(106, 11, 1, 9, '#000'); R(103, 10, 7, 2, '#FFEC27'); R(98, 19, 6, 1, '#FFF1E8');
+  } else {
+    // 辦公桌、螢幕上的走勢圖、盆栽、時鐘
+    R(84, 20, 36, 2, '#000'); R(86, 22, 2, 8, '#000'); R(116, 22, 2, 8, '#000');
+    R(92, 7, 20, 12, '#000'); R(93, 8, 18, 10, '#1D2B53'); R(101, 19, 2, 1, '#000');
+    const up = L >= 3;
+    for (let i = 0; i < 8; i++) R(94 + i * 2, up ? 16 - i : 10 + i % 3 + (i > 4 ? 3 : 0), 2, 1, up ? '#00E436' : '#FF004D');
+    R(6, 22, 8, 8, '#AB5236'); R(7, 15, 6, 7, '#00E436'); R(5, 17, 3, 3, '#008751'); R(12, 16, 3, 3, '#008751');
+    R(28, 6, 8, 8, '#000'); R(29, 7, 6, 6, '#FFF1E8'); R(32, 8, 1, 3, '#000'); R(32, 10, 2, 1, '#000');
+  }
+  // 可以點的東西：還沒點過的會閃一顆黃色小星星
+  if (SC.frame % 6 < 3) sceneSpots(work).forEach(sp => { if (!SC.clicked[sp.id]) { R(sp.x + sp.w - 3, sp.y - 1, 3, 3, '#000'); R(sp.x + sp.w - 2, sp.y, 1, 1, '#FFEC27'); } });
+  // 小人：會走路、轉身、跳
+  let grid = spriteGrid(S.gender, {mood:S.happy, phase:work ? 'work' : 'college'});
+  if (SC.dir < 0) grid = grid.map(r => r.slice().reverse());
+  const walking = SC.x !== SC.tx && !SC.jump;
+  const oy = 14 + (walking && SC.frame % 2 ? -1 : 0) + JUMP[SC.jump];
+  if (SC.dance) grid = SC.frame % 2 ? grid.map(r => r.slice().reverse()) : grid;
+  R(SC.x + 3, 29, 10, 1, 'rgba(0,0,0,.35)');                       // 影子
+  paintGrid(c, grid, S.gender, SC.x, oy);
+}
+/* =====================================================
+   場景互動：點小人會跳起來說話；點房間裡的東西會出現說明；小人會自己走動
+===================================================== */
+const SC = {x:64, tx:64, dir:1, jump:0, frame:0, clicked:{}, timer:null, say:null, sayT:null, taps:0, tapT:null, dance:0, last:''};
+const JUMP = [0, -3, -5, -6, -5, -3, -1];
+function sceneSpots(work) {
+  return work ? [
+    {id:'window',  x:50, y:4,  w:28, h:19},
+    {id:'plant',   x:5,  y:15, w:10, h:15},
+    {id:'clock',   x:28, y:6,  w:8,  h:8},
+    {id:'monitor', x:92, y:7,  w:20, h:13}
+  ] : [
+    {id:'window',  x:50, y:4,  w:28, h:19},
+    {id:'bed',     x:4,  y:9,  w:30, h:21},
+    {id:'poster',  x:38, y:7,  w:8,  h:11},
+    {id:'desk',    x:84, y:10, w:32, h:20}
+  ];
+}
+function goalProgress() {
+  const g = goalOf(S); if (!g) return null;
+  const t = total(), safeNeed = S.living * .75;
+  if (g.id === 'house')  return t >= 1200000 ? `目標「${g.n}」：資產已經夠了！保持下去～` : `目標「${g.n}」：還差 ${money(1200000 - t)}。`;
+  if (g.id === 'travel') return `目標「${g.n}」：資產 ${money(t)} / $1,000,000，幸福值 ${S.happy} / 85。`;
+  if (g.id === 'study')  return `目標「${g.n}」：現金＋債券 ${money(S.cash + S.bond)} / $500,000。`;
+  if (g.id === 'safe')   return `目標「${g.n}」：現金 ${money(S.cash)} / ${money(safeNeed)}，保險 ${S.insuredYears} 年有保障。`;
+  return null;
+}
+function charLine() {
+  const L = S.light, lines = [];
+  if (S.happy >= 80) lines.push('今年心情超好！✨', '工作和生活都要兼顧，我做到了！');
+  else if (S.happy < 30) lines.push('好累喔……是不是該留點錢給自己放鬆？', '存錢很重要，但幸福值太低也會扣分耶。');
+  else lines.push('今年要怎麼分配呢？', '先想清楚「需要」和「想要」。');
+  if (L >= 3) lines.push('大家都說股市完了……但會不會正是比較便宜的時候？', '降息了，債券通常會漲喔。');
+  if (L <= 1) lines.push('大家都在聊股票，好像有點太熱了？', '升息了，定存利息變高，債券要小心。');
+  if (S.debt > 0.5) lines.push(`我還欠 ${money(S.debt)} 卡債……利息 15% 好可怕！`);
+  if (S.cash < S.living / 4) lines.push('現金好少，萬一出事要賣股票了……緊急預備金要存起來！');
+  const gp = goalProgress(); if (gp) lines.push(gp, gp);
+  lines.push(`我是${S.risk}的投資人，配置要符合自己的個性。`, '點點看房間裡會閃的東西！');
+  const pool = lines.filter(l => l !== SC.last);
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  SC.last = pick; return pick;
+}
+function termLine() {
+  const ks = Object.keys(TERMS), k = ks[Math.floor(Math.random() * ks.length)];
+  return `📖 ${k}（第 ${TERMS[k].w} 週）：${TERMS[k].d}`;
+}
+function spotLine(id) {
+  const L = S.light, left = 10 - S.year;
+  const weather = ['烈日當空，熱到受不了', '太陽很大，有點悶熱', '晴朗舒服', '天空灰灰的，好像要變天', '下著大雨'][L];
+  switch (id) {
+    case 'window':  return `☀ 窗外${weather}，就像現在的「${LIGHTS[L].n}」：景氣${LIGHTS[L].s}。${L >= 3 ? '雨天的時候，傘（股票）常常比較便宜。' : L <= 1 ? '太陽太大的時候，記得別曬過頭（追高）。' : ''}`;
+    case 'bed':     return `🛏 上下舖。睡飽才有精神讀書！現在幸福值 ${S.happy}。`;
+    case 'poster':  return '🎤 偶像的海報。想要的東西，就用「享樂消費」的預算來買吧。';
+    case 'desk':    return termLine();
+    case 'plant':   return '🌱 植物每天只長一點點，十年後就很大一盆，就像複利。';
+    case 'clock':   return `⏰ 現在 ${ageOf(S.year)} 歲，第 ${S.year} / 10 年。${left ? `離 28 歲還有 ${left} 年。` : '最後一年了！'}`;
+    case 'monitor': return `📈 螢幕上是股價走勢：${L >= 3 ? '綠色往上，景氣轉弱時股價常已跌一段，之後反彈。' : L <= 1 ? '紅色往下，過熱之後常會修正。' : '上上下下，很正常。'}看圖猜漲跌就是技術分析，只能參考。`;
+  }
+  return '';
+}
+function say(text, anchorX) {
+  const wrap = $('#sceneWrap'); if (!wrap) return;
+  let b = wrap.querySelector('.say');
+  if (!b) { b = document.createElement('div'); b.className = 'say'; wrap.appendChild(b); }
+  b.textContent = text; b.style.animation = 'none'; void b.offsetWidth; b.style.animation = '';
+  SC.say = {anchor:anchorX};
+  placeSay();
+  clearTimeout(SC.sayT); SC.sayT = setTimeout(() => { b.remove(); SC.say = null; }, Math.max(3500, text.length * 120));
+}
+function placeSay() {
+  const wrap = $('#sceneWrap'), b = wrap && wrap.querySelector('.say'); if (!b || !SC.say) return;
+  const W = wrap.clientWidth;
+  const ax = (SC.say.anchor === 'char' ? SC.x + 8 : SC.say.anchor) / 128 * W;
+  if (W < 520) {                                   // 手機：對話框放在場景下方，不擋住畫面
+    b.classList.add('below'); b.style.left = '';
+    b.style.setProperty('--tail', clamp(ax - 6, 8, W - 20) + 'px');
+    return;
+  }
+  b.classList.remove('below');
+  const bw = b.offsetWidth;
+  const left = clamp(ax, bw / 2 + 6, W - bw / 2 - 6);
+  b.style.left = left + 'px';
+  b.style.setProperty('--tail', clamp(ax - (left - bw / 2) - 5, 8, bw - 18) + 'px');
+}
+function sceneHit(cv, e) {
+  const r = cv.getBoundingClientRect();
+  const x = (e.clientX - r.left) / r.width * 128, y = (e.clientY - r.top) / r.height * 40;
+  if (x >= SC.x + 2 && x <= SC.x + 14 && y >= 12 && y <= 31) return {kind:'char'};
+  const sp = sceneSpots(isWork(S.year)).find(s => x >= s.x && x <= s.x + s.w && y >= s.y && y <= s.y + s.h);
+  return sp ? {kind:'spot', sp} : null;
+}
+function startScene() {
+  const cv = $('#scene'); if (!cv || !S) return;
+  cv.onclick = e => {
+    const h = sceneHit(cv, e); if (!h) return;
+    if (h.kind === 'char') {
+      SC.jump = 1; SC.taps++; clearTimeout(SC.tapT); SC.tapT = setTimeout(() => SC.taps = 0, 1500);
+      if (SC.taps >= 5) { SC.taps = 0; SC.dance = 16; say('🎉 跳一段理財舞！（不會增加資產喔）', 'char'); coinBurst(10); BGM.sfx('badge'); }
+      else { say(charLine(), 'char'); BGM.sfx('coin'); }
+    } else {
+      SC.clicked[h.sp.id] = true;
+      SC.dir = h.sp.x + h.sp.w / 2 > SC.x + 8 ? 1 : -1;
+      say(spotLine(h.sp.id), h.sp.x + h.sp.w / 2); BGM.sfx('light');
+    }
+    drawScene(cv);
+  };
+  cv.onmousemove = e => { cv.style.cursor = sceneHit(cv, e) ? 'pointer' : 'default'; };
+  clearInterval(SC.timer);
+  SC.timer = setInterval(sceneTick, 120);
+  drawScene(cv);
+}
+function sceneTick() {
+  const cv = $('#scene');
+  if (!cv || !S || cv.closest('.screen.hidden') || !document.body.contains(cv)) { clearInterval(SC.timer); SC.timer = null; return; }
+  SC.frame++;
+  if (SC.dance) { SC.dance--; if (SC.dance % 4 === 0) SC.jump = 1; }
+  if (SC.jump) SC.jump = (SC.jump + 1) % JUMP.length;
+  else if (SC.x !== SC.tx) { SC.dir = SC.tx > SC.x ? 1 : -1; SC.x += SC.dir; }
+  else if (Math.random() < .025) { const [a, b] = isWork(S.year) ? [18, 76] : [36, 70]; SC.tx = Math.round(a + Math.random() * (b - a)); }
+  drawScene(cv); placeSay();
+}
+const spriteHTML = (id, size) => `<canvas class="sprite" id="${id}" width="16" height="16" style="width:${size}px;height:${size}px"></canvas>`;
+const lightSw = i => `<span class="light" style="background:linear-gradient(135deg,${LIGHTS[i].c[0]} 50%,${LIGHTS[i].c[1]} 50%)"></span>`;
+function lampsHTML(cur, prev = null) {
+  return `<div class="lamps">${[4, 3, 2, 1, 0].map(i => `<div class="lampcol"><div class="lamp ${i === cur ? 'on' : ''} ${i === prev ? 'was' : ''}" style="background:linear-gradient(135deg,${LIGHTS[i].c[0]} 50%,${LIGHTS[i].c[1]} 50%)"></div><div class="lamp-label">${LIGHTS[i].n.replace('燈', '')}</div></div>`).join('')}</div>`;
+}
+
+/* =====================================================
+   畫面切換、提示、彈窗、動畫
+===================================================== */
+const GAME_SCREENS = ['s-news', 's-alloc', 's-result', 's-grad'];
+let lastScreen = 's-title';
+function show(id) {
+  document.querySelectorAll('section.screen').forEach(s => s.classList.add('hidden'));
+  document.querySelectorAll('.tip').forEach(t => t.remove());
+  const el = document.getElementById(id); el.classList.remove('hidden');
+  el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+  $('#hud').classList.toggle('hidden', !GAME_SCREENS.includes(id) || !S);
+  if (id === 's-help') renderHelp(); else lastScreen = id;
+  if (id === 's-title') renderTitle();
+  if (S && GAME_SCREENS.includes(id)) renderHud();
+  el.querySelectorAll('canvas.chart-cv').forEach(c => drawChart(c));
+  if (id === 's-news' && S) startScene();
+  window.scrollTo(0, 0);
+}
+function toast(msg) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+}
+function flashSaved(msg = '已存檔') {
+  const t = document.createElement('div'); t.className = 'saved'; t.textContent = '💾 ' + msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 1600);
+}
+function modal(html, buttons = [{t:'關閉'}], opts = {}) {
+  const bg = document.createElement('div'); bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal box ${opts.dark ? 'dark' : ''}" role="dialog">${html}<div class="row mt" style="justify-content:flex-end"></div></div>`;
+  const row = bg.querySelector('.row');
+  buttons.forEach(b => {
+    const btn = document.createElement('button'); btn.className = 'btn ' + (b.cls || ''); btn.innerHTML = b.t;
+    btn.onclick = () => { if (b.keep) { b.fn && b.fn(bg); return; } bg.remove(); b.fn && b.fn(); };
+    row.appendChild(btn);
+  });
+  if (!opts.locked) bg.addEventListener('click', e => { if (e.target === bg) bg.remove(); });
+  document.body.appendChild(bg);
+  return bg;
+}
+function confirmBox(msg, yes, yesLabel = '確定', cls = 'red') {
+  modal(`<p>${msg}</p>`, [{t:'取消', cls:'gray'}, {t:yesLabel, cls, fn:yes}]);
+}
+/* 拿到獎金或股票報酬超過 10% 時，掉落像素金幣 */
+function coinBurst(n = 24) {
+  const b = document.createElement('div'); b.className = 'burst';
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div'); c.className = 'coin';
+    c.style.left = Math.random() * 100 + 'vw'; c.style.animationDelay = Math.random() * .6 + 's';
+    c.style.width = c.style.height = (10 + Math.floor(Math.random() * 3) * 4) + 'px';
+    b.appendChild(c);
+  }
+  document.body.appendChild(b); setTimeout(() => b.remove(), 2400);
+}
+/* 金額逐格跳動 */
+function tick(el, from, to, opts = {}) {
+  if (!el) return;
+  const steps = 12; let i = 0;
+  if (Math.round(from) === Math.round(to)) { el.textContent = money(to); return; }
+  const d = to - from;
+  const timer = setInterval(() => {
+    i++; el.textContent = money(from + d * i / steps);
+    if (i >= steps) {
+      clearInterval(timer);
+      if (opts.delta) el.insertAdjacentHTML('beforeend', `<span class="delta ${d >= 0 ? 'pos' : 'neg'}">${d >= 0 ? '+' : '−'}${fmt(Math.abs(d))}</span>`);
+    }
+  }, 45);
+}
+
+/* 名詞提示氣泡：點名詞打開、點外面關閉 */
+function openTip(el) {
+  document.querySelectorAll('.tip').forEach(t => t.remove());
+  const k = el.dataset.t, d = TERMS[k]; if (!d) return;
+  const tip = document.createElement('div'); tip.className = 'tip';
+  tip.innerHTML = `<b>${esc(k)}</b><span class="wk">第 ${d.w} 週教過</span><div>${d.d}</div>${d.ex ? `<div class="ex">例子：${d.ex}</div>` : ''}`;
+  document.body.appendChild(tip);
+  const r = el.getBoundingClientRect(), vw = document.documentElement.clientWidth;
+  if (el.closest('.modal')) {
+    tip.style.position = 'fixed';
+    tip.style.left = Math.max(8, Math.min(r.left, vw - tip.offsetWidth - 8)) + 'px';
+    tip.style.top = (r.bottom + 8) + 'px';
+  } else {
+    tip.style.left = Math.max(8, Math.min(r.left + window.scrollX, window.scrollX + vw - tip.offsetWidth - 8)) + 'px';
+    tip.style.top = (r.bottom + window.scrollY + 8) + 'px';
+  }
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('.term');
+  if (el) { e.preventDefault(); e.stopPropagation(); openTip(el); return; }
+  if (!e.target.closest('.tip')) document.querySelectorAll('.tip').forEach(t => t.remove());
+}, true);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('term')) openTip(e.target);
+  if (e.key === 'Escape') document.querySelectorAll('.tip').forEach(t => t.remove());
+});
+function openTerms() {
+  const byW = {};
+  Object.entries(TERMS).forEach(([k, v]) => (byW[v.w] = byW[v.w] || []).push([k, v]));
+  let h = '<h2>📖 名詞小抄</h2><p class="muted">依上課週次排列</p>';
+  Object.keys(byW).sort((a, b) => a - b).forEach(w => {
+    h += `<h3>第 ${w} 週</h3>`;
+    byW[w].forEach(([k, v]) => h += `<p><b>${esc(k)}</b>：${v.d}<br><span class="muted">例子：${v.ex}</span></p>`);
+  });
+  modal(h);
+}
+
+/* =====================================================
+   儲存空間（localStorage 被禁止時仍可遊玩）
+===================================================== */
+const SAVE_KEY = 'pxlife_saves_v1', RANK_KEY = 'pxlife_rank_v1';
+const STORE_OK = (() => { try { localStorage.setItem('__t', '1'); localStorage.removeItem('__t'); return true; } catch (e) { return false; } })();
+function readJSON(k, def) { if (!STORE_OK) return def; try { const v = JSON.parse(localStorage.getItem(k)); return v ?? def; } catch (e) { return def; } }
+function writeJSON(k, v) { if (!STORE_OK) return false; try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+function getSlots() { const s = readJSON(SAVE_KEY, [null, null, null]); return Array.isArray(s) && s.length === 3 ? s : [null, null, null]; }
+function setSlots(s) { return writeJSON(SAVE_KEY, s); }
+
+/* =====================================================
+   景氣代碼：同一個代碼 → 同一段十年（燈號、股票報酬、事件、抉擇卡、題目都一樣）
+   班級對戰時全班輸入同一個代碼，比的是「決策」而不是運氣
+===================================================== */
+function mulberry32(a) {
+  return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+function genWorld(code) {
+  const R = mulberry32(Math.imul(parseInt(code, 10) || 1, 2654435761) >>> 0);
+  const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+  const w = {code:String(code), light:[2], u:[0], aux:[[]], ev:[null], card:{}, quiz:[], qOrder:[]};
+  let L = 2;                                           // 第 1 年綠燈；之後 30% 轉熱、40% 不變、30% 轉冷
+  for (let y = 1; y <= 10; y++) {
+    if (y > 1) { const r = R(); if (r < .3) L = clamp(L - 1, 0, 4); else if (r >= .7) L = clamp(L + 1, 0, 4); }
+    w.light[y] = L; w.u[y] = R(); w.aux[y] = [R(), R(), R(), R()];
+  }
+  let last = null;
+  for (let y = 1; y <= 10; y++) { last = drawEvent(y, w.light[y], last, R); w.ev[y] = last; }
+  const allIds = shuffle(CARDS.filter(c => c.phase === 'all').map(c => c.id));
+  w.card[2] = allIds.pop(); w.card[4] = allIds.pop();
+  const rest = shuffle(allIds.concat(CARDS.filter(c => c.phase === 'work').map(c => c.id)));
+  [6, 8, 10].forEach(y => w.card[y] = rest.pop());
+  w.quiz = shuffle(QBANK.map((_, i) => i)).slice(0, 10);
+  w.qOrder = w.quiz.map(() => shuffle([0, 1, 2]));
+  return w;
+}
+const randCode = () => String(1000 + Math.floor(Math.random() * 9000));
+
+/* =====================================================
+   每年快問快答（第 2～16 週）：a[0] 是正確答案，顯示時會打亂
+===================================================== */
+const QBANK = [
+  {w:2,  q:'買二手車時，賣家比你更清楚車況，你很容易買到爛車。這叫做？', a:['逆選擇', '道德危險', '通貨膨脹'], ex:'交易「之前」資訊不對稱，好壞分不清，就是逆選擇（檸檬問題）。'},
+  {w:2,  q:'買了手機險之後，用手機變得很不小心。這叫做？', a:['道德危險', '逆選擇', '複利'], ex:'交易「之後」因為有保障而改變行為，是道德危險，所以保險會設自負額。'},
+  {w:2,  q:'銀行把存款人的錢借給需要的人，扮演什麼角色？', a:['金融中介', '中央銀行', '證券交易所'], ex:'銀行連接「有錢的人」和「需要錢的人」，是金融中介。'},
+  {w:3,  q:'CPI 年增率 3%，代表什麼？', a:['物價比去年上漲約 3%', '薪水比去年多 3%', '股市漲了 3%'], ex:'CPI 是消費者物價指數，年增 3% 就是一般物價漲了約 3%。'},
+  {w:3,  q:'定存利率 1.5%、通膨率 2%，實質利率大約是多少？', a:['−0.5%', '3.5%', '1.5%'], ex:'實質利率 ≈ 名目利率 − 通膨率 = 1.5% − 2% = −0.5%，錢其實變薄了。'},
+  {w:3,  q:'台灣的景氣對策信號（景氣燈號）由哪個機關發布？', a:['國家發展委員會（國發會）', '中央銀行', '證券交易所'], ex:'景氣燈號由國發會每月編製發布。'},
+  {w:4,  q:'台幣升值時，出國旅遊會？', a:['變便宜', '變貴', '沒有影響'], ex:'台幣升值，同樣的台幣能換到更多外幣。'},
+  {w:4,  q:'「逆向操作」的意思是？', a:['藍燈景氣差時加碼、紅燈過熱時減碼', '紅燈時全部買進', '看新聞大家買什麼就跟著買'], ex:'大家最悲觀時價格常較便宜，最樂觀時常較貴。'},
+  {w:4,  q:'景氣低迷時，失業率通常會？', a:['上升', '下降', '不變'], ex:'公司訂單減少會裁員，失業率上升。遊戲中藍燈、黃藍燈年失業機率加倍。'},
+  {w:4,  q:'台幣貶值時，哪一種公司通常比較有利？', a:['出口公司', '進口商', '出國旅遊的人'], ex:'出口公司賺到的外幣，換回台幣會變多。'},
+  {w:5,  q:'央行升息，最主要的目的通常是？', a:['壓住通膨', '讓股市大漲', '讓台幣貶值'], ex:'升息讓借錢變貴、大家少花錢，物價就比較不會漲太快。'},
+  {w:5,  q:'「鴿派」的央行官員，比較傾向？', a:['降息、刺激景氣', '升息、打擊通膨', '關閉股市'], ex:'鴿派較重視景氣和就業；鷹派較重視壓通膨。'},
+  {w:5,  q:'美國的中央銀行叫做？', a:['聯準會（Fed）', '國發會', '世界銀行'], ex:'美國聯邦準備理事會，簡稱聯準會或 Fed。'},
+  {w:6,  q:'用 72 法則，年報酬 6% 大約幾年會翻倍？', a:['12 年', '6 年', '72 年'], ex:'72 ÷ 6 = 12。'},
+  {w:6,  q:'「不要把雞蛋放在同一個籃子裡」是指？', a:['分散投資', '定期定額', '融資槓桿'], ex:'把錢分到不同資產，一種跌的時候另一種可能撐住。'},
+  {w:6,  q:'一般來說，預期報酬越高的投資，風險會？', a:['越高', '越低', '和風險無關'], ex:'報酬和風險通常是一體兩面。'},
+  {w:6,  q:'複利最大的特色是？', a:['利息也會再生利息', '每年利息都固定一樣', '只有股票才有複利'], ex:'利滾利，時間越長效果越大。'},
+  {w:7,  q:'台股買賣的手續費公定費率是？', a:['0.1425%', '1.425%', '3%'], ex:'公定手續費率 0.1425%，買進、賣出都要付。'},
+  {w:7,  q:'證券交易稅在什麼時候收？', a:['賣出時', '買進時', '買進和賣出都收'], ex:'證交稅只在賣出時收。'},
+  {w:7,  q:'賣出股票型 ETF，證交稅率是？', a:['0.1%', '0.3%', '1%'], ex:'個股 0.3%，股票型 ETF 0.1%。'},
+  {w:9,  q:'ETF 最大的優點是？', a:['一次買進一籃子股票，分散風險', '保證不會賠錢', '報酬一定比定存高'], ex:'ETF 追蹤指數，一次分散到很多公司，但仍然會有漲跌。'},
+  {w:9,  q:'每個月固定投入相同金額買 ETF，叫做？', a:['定期定額', '融資', '當沖'], ex:'不管漲跌都固定投入，靠紀律平均成本。'},
+  {w:10, q:'市場利率上升時，舊債券的價格通常會？', a:['下跌', '上漲', '不變'], ex:'利率與債券價格反向：新債券利息比較高，舊債券就要降價才賣得掉。'},
+  {w:10, q:'央行降息時，債券價格通常會？', a:['上漲', '下跌', '歸零'], ex:'降息時舊債券的利息相對變高，價格上漲。'},
+  {w:11, q:'「黃金交叉」是哪一種分析方法的用語？', a:['技術分析', '財報分析', '產業分析'], ex:'看均線、K 線等圖形的是技術分析。'},
+  {w:12, q:'EPS 是什麼意思？', a:['每股盈餘', '本益比', '殖利率'], ex:'EPS 是公司每一股賺了多少錢。'},
+  {w:12, q:'一家公司 EPS 連續三年都是負的，代表？', a:['公司一直在虧錢', '公司賺很多', '股價一定會漲'], ex:'EPS 為負代表虧損，題材再熱也要小心。'},
+  {w:13, q:'用融資買股票，最大的風險是？', a:['虧損被放大，可能被斷頭', '不能參加股東會', '手續費會變便宜'], ex:'融資是借錢投資，賺賠都放大，跌太多會被強制賣出。'},
+  {w:14, q:'知道公司還沒公開的重大消息就去買股票，這是？', a:['內線交易，違法', '合法的技術分析', '價值投資'], ex:'內線交易違反證券交易法，會被罰款甚至坐牢。'},
+  {w:15, q:'緊急預備金一般建議準備幾個月的生活費？', a:['3～6 個月', '1 個星期', '10 年'], ex:'3～6 個月生活費，遇到失業或意外才不慌。'},
+  {w:15, q:'信用卡只繳「最低應繳金額」，剩下的錢會？', a:['被收很高的循環利息', '銀行自動幫你免除', '下個月打折'], ex:'剩下的欠款會用很高的利率計息，越滾越大。'},
+  {w:15, q:'收入扣掉必要生活費後，可以自由運用的錢叫？', a:['可支配所得', '毛利', '薪資總額'], ex:'可支配所得就是遊戲裡每年用滑桿分配的錢。'},
+  {w:16, q:'有人說「保證獲利、穩賺不賠」，你應該？', a:['懷疑是詐騙，打 165 查證', '趕快匯款以免錯過', '借錢加碼'], ex:'保證獲利是投資詐騙最常見的話術。'},
+  {w:16, q:'股市大跌時因為害怕就全部賣光，最接近哪一種心理？', a:['損失趨避', '過度自信', '定期定額'], ex:'賠錢的痛比賺錢的快樂強烈，讓人容易在低點恐慌賣出。'}
+];
+
+/* =====================================================
+   人生目標：開始時選一個，28 歲時判定，達成 +20 分
+===================================================== */
+const GOAL_BONUS = 20;
+const GOALS = [
+  {id:'travel', i:'🌏', n:'環遊世界',     d:'28 歲時總資產 ≥ 100 萬，而且幸福值 ≥ 85（錢要夠，也要玩得開心）', ok:st => total(st) >= 1000000 && st.happy >= 85},
+  {id:'house',  i:'🏠', n:'買房頭期款',   d:'28 歲時總資產 ≥ 120 萬', ok:st => total(st) >= 1200000},
+  {id:'study',  i:'🎓', n:'出國讀研究所', d:'28 歲時現金＋債券 ≥ 50 萬（學費要穩，不能全押股票）', ok:st => st.cash + st.bond - st.debt >= 500000},
+  {id:'safe',   i:'🛡', n:'安穩生活',     d:'現金 ≥ 9 個月生活費、沒有負債、10 年都有保險', ok:st => st.cash >= st.living * .75 && st.debt < 1 && st.insuredYears >= 10}
+];
+const goalOf = st => GOALS.find(g => g.id === st.goal) || null;
+
+/* =====================================================
+   成就徽章：收集在這台瀏覽器
+===================================================== */
+const BADGE_KEY = 'pxlife_badges_v1';
+const BADGES = [
+  {id:'iron',     i:'🛡', n:'鋼鐵心臟',   d:'股市大跌 20% 時選擇續抱', w:16},
+  {id:'antiscam', i:'🕵', n:'防詐達人',   d:'遇到的詐騙卡全部沒上當', w:16},
+  {id:'contra',   i:'🔄', n:'逆向大師',   d:'藍燈、黃藍燈年的股票比例高於紅燈、黃紅燈年', w:4},
+  {id:'million',  i:'💰', n:'第一桶金',   d:'總資產突破 100 萬', w:6},
+  {id:'scholar',  i:'📚', n:'理財學霸',   d:'快問快答答對 8 題以上', w:0},
+  {id:'perfect',  i:'💯', n:'滿分神人',   d:'快問快答 10 題全對', w:0},
+  {id:'goal',     i:'⭐', n:'夢想成真',   d:'達成自己選的人生目標', w:15},
+  {id:'nodebt',   i:'🧾', n:'零負債人生', d:'10 年都沒有欠過卡債', w:15},
+  {id:'insured',  i:'🏥', n:'保險救了我', d:'住院時剛好有保險保障', w:2},
+  {id:'happy',    i:'😆', n:'快樂滿點',   d:'幸福值衝到 100', w:0},
+  {id:'legend',   i:'👑', n:'傳說理財王', d:'結局拿到 S 級', w:0},
+  {id:'lemon',    i:'🍋', n:'檸檬受害者', d:'買到檸檬車（第 2 週逆選擇）', w:2},
+  {id:'margin',   i:'💥', n:'斷頭初體驗', d:'融資被斷頭（第 13 週槓桿）', w:13}
+];
+let badgeQ = 0;
+function unlock(id) {
+  if (!S) return;
+  S.badges = S.badges || [];
+  if (S.badges.includes(id)) return;
+  S.badges.push(id);
+  if (settle.silent) return;
+  const all = readJSON(BADGE_KEY, {}), isNew = !all[id];
+  if (isNew) { all[id] = new Date().toLocaleDateString('zh-TW'); writeJSON(BADGE_KEY, all); }
+  const b = BADGES.find(x => x.id === id);
+  const delay = badgeQ++ * 1400;
+  setTimeout(() => {
+    const t = document.createElement('div'); t.className = 'badge-pop';
+    t.innerHTML = `<span class="bicon">${b.i}</span><div><small>${isNew ? '解鎖新徽章！' : '再次達成'}</small><br><b>${b.n}</b></div>`;
+    document.body.appendChild(t); BGM.sfx('badge');
+    setTimeout(() => { t.remove(); badgeQ = Math.max(0, badgeQ - 1); }, 2600);
+  }, delay);
+}
+function showBadges() {
+  const all = readJSON(BADGE_KEY, {});
+  const n = BADGES.filter(b => all[b.id]).length;
+  $('#s-badges').innerHTML = `<div class="box">
+    <h2>🏅 徽章收藏 ${n} / ${BADGES.length}</h2>
+    <p class="muted">每一枚徽章背後都是一個理財觀念。徽章收集在這台電腦的瀏覽器裡。</p>
+    <div class="badge-grid">${BADGES.map(b => `<div class="badge ${all[b.id] ? 'got' : ''}"><div class="bicon">${all[b.id] ? b.i : '？'}</div><b>${all[b.id] ? b.n : '？？？'}</b><small>${b.d}</small>${all[b.id] ? `<small class="muted">${esc(all[b.id])}</small>` : ''}</div>`).join('')}</div>
+    <div class="row mt"><button class="btn" onclick="show('s-title')">◀ 返回</button></div></div>`;
+  show('s-badges');
+}
+
+/* =====================================================
+   遊戲狀態
+===================================================== */
+let S = null;
+let draft = {gender:'m', name:'', mode:'free', code:''};
+function newState(name, gender, risk, riskScore, code, mode, goal) {
+  return {
+    v:2, name, gender, risk, riskScore, mode, goal,
+    world:genWorld(code),
+    year:0, light:2, lightHist:[2],
+    cash:20000, bond:0, stock:0, debt:0,
+    family:96000, partTime:72000,          // 家裡 8,000＋打工 6,000（每月）
+    salary:35000, living:108000, happy:60, // 大學生活費每月 9,000
+    hist:[{y:0, age:18, cash:20000, bond:0, stock:0, debt:0, total:20000, light:2, rP:0}],
+    allocs:[], usedCards:[], choices:[], evPicks:[],
+    quizLog:[], qPending:null, badges:[],
+    insuredYears:0, bothYears:0, good:0, fees:0, investIn:0, investOut:0, cpiIdx:1,
+    sickIns:0, sickNoIns:0, soldPanic:false, everDebt:false, scamSafe:0, scamFail:0,
+    holdBonus:0, marginYear:false, cur:null, slot:null, finished:false, ranked:false
+  };
+}
+const total = (st = S) => st.cash + st.bond + st.stock - st.debt;
+const ageOf = y => 17 + y;                 // 第 1 年 18 歲 … 第 10 年 27 歲，結算後 28 歲
+const isWork = y => y >= 5;
+
+let hudPrev = null;
+function renderHud() {
+  const y = Math.max(S.year, 1);
+  drawSprite($('#hudAvatar'), S.gender, {mood:S.happy, phase:isWork(y) ? 'work' : 'college'});
+  const gl = goalOf(S);
+  $('#hudName').textContent = S.name;
+  $('#hudGoal').textContent = gl ? gl.i + ' ' + gl.n : '';
+  $('#hudGoal').title = gl ? '人生目標：' + gl.d : '';
+  $('#hudYear').textContent = y;
+  $('#hudAge').textContent = ageOf(y);
+  $('#hudPhase').textContent = isWork(y) ? '上班族' : '大學生';
+  const cur = {cash:S.cash, bond:S.bond, stock:S.stock, debt:S.debt};
+  const p = hudPrev && hudPrev.name === S.name ? hudPrev : cur;
+  tick($('#hudCash'), p.cash, cur.cash); tick($('#hudBond'), p.bond, cur.bond);
+  tick($('#hudStock'), p.stock, cur.stock); tick($('#hudDebt'), p.debt, cur.debt);
+  $('#hudDebt').classList.toggle('neg', S.debt > 0.5);
+  hudPrev = {...cur, name:S.name};
+  $('#hudHappy').style.width = S.happy + '%';
+  $('#hudHappyN').textContent = Math.round(S.happy);
+}
+
+/* =====================================================
+   開始畫面
+===================================================== */
+function renderTitle() {
+  const box = $('#titleChars');
+  if (!box.children.length) {
+    box.innerHTML = spriteHTML('tM', 96) + spriteHTML('tF', 96);
+    drawSprite($('#tM'), 'm', {mood:80, phase:'grad'});
+    drawSprite($('#tF'), 'f', {mood:80, phase:'grad'});
+  }
+  const got = Object.keys(readJSON(BADGE_KEY, {})).length;
+  $('#btnBadges').textContent = `🏅 徽章收藏 ${got}/${BADGES.length}`;
+  const has = getSlots().some(Boolean);
+  const b = $('#btnContinue'); b.disabled = !has;
+  b.title = has ? '' : (STORE_OK ? '還沒有存檔' : '這台瀏覽器無法存檔，請改用存檔碼');
+}
+(function coins() {
+  const c = $('#coins');
+  for (let i = 0; i < 14; i++) {
+    const d = document.createElement('div'); d.className = 'coin';
+    d.style.left = Math.random() * 100 + 'vw';
+    d.style.animationDuration = (8 + Math.random() * 10) + 's';
+    d.style.animationDelay = (-Math.random() * 15) + 's';
+    d.style.opacity = .2;
+    c.appendChild(d);
+  }
+})();
+
+/* =====================================================
+   建立角色
+===================================================== */
+function goCreate() {
+  draft = {gender:'m', name:'', mode:draft.mode || 'free', code:draft.code || ''};
+  $('#nameInput').value = ''; $('#nameErr').textContent = '';
+  $('#codeInput').value = draft.code;
+  pickGender('m'); pickMode(draft.mode); validateName();
+  show('s-create');
+  setTimeout(() => $('#nameInput').focus(), 50);
+}
+function pickGender(g) {
+  draft.gender = g;
+  document.querySelectorAll('.gcard').forEach(c => c.classList.toggle('sel', c.dataset.g === g));
+  drawSprite($('#pvM'), 'm', {mood:g === 'm' ? 80 : 50, phase:'college'});
+  drawSprite($('#pvF'), 'f', {mood:g === 'f' ? 80 : 50, phase:'college'});
+}
+function pickMode(m) {
+  draft.mode = m;
+  document.querySelectorAll('.mcard').forEach(c => c.classList.toggle('sel', c.dataset.m === m));
+  $('#codeWrap').classList.toggle('hidden', m !== 'class');
+  validateName();
+}
+function validateName(showErr) {
+  const n = $('#nameInput').value.trim(), len = [...n].length;
+  let msg = len === 0 ? '請輸入名字' : len > 8 ? `名字最多 8 個字（現在 ${len} 個字）` : '';
+  const code = $('#codeInput').value.trim();
+  if (!msg && draft.mode === 'class' && !/^\d{1,8}$/.test(code)) msg = '請輸入老師給的班級代碼（1～8 位數字）';
+  $('#btnCreate').disabled = !!msg;
+  $('#nameErr').textContent = (showErr || len > 8 || (code && draft.mode === 'class')) ? msg : '';
+  return msg ? null : n;
+}
+$('#nameInput').addEventListener('input', () => validateName());
+$('#codeInput').addEventListener('input', () => validateName());
+$('#nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') confirmCreate(); });
+function confirmCreate() {
+  const n = validateName(true); if (!n) return;
+  draft.name = n;
+  draft.code = draft.mode === 'class' ? String(parseInt($('#codeInput').value.trim(), 10)) : randCode();
+  startQuiz();
+}
+
+/* =====================================================
+   風險屬性測驗（第 6 週「我是哪種投資人」）
+===================================================== */
+const QUIZ = [
+  {q:'投資一個月後帳面虧損 20%，你會？', a:['全部賣出，避免再虧', '先不動，繼續觀察', '趁便宜加碼買進']},
+  {q:'預期報酬同為 5%，你選哪個？', a:['確定賺 5%', '都可以', '一半機率賺 15%、一半賠 5%']},
+  {q:'這筆錢多久後會用到？', a:['1 年內', '1～5 年', '5 年以上']},
+  {q:'你最在意什麼？', a:['本金不能虧', '穩穩賺，小波動可接受', '高報酬，大波動也可以']},
+  {q:'某股可能翻倍、也可能腰斬，你會？', a:['不碰', '小額試試', '重押']}
+];
+let quizI = 0, quizScore = 0;
+function startQuiz() { quizI = 0; quizScore = 0; renderQuiz(); show('s-quiz'); }
+function renderQuiz() {
+  $('#quizBar').innerHTML = QUIZ.map((_, i) => `<i class="${i < quizI ? 'done' : ''}"></i>`).join('');
+  if (quizI >= QUIZ.length) return quizResult();
+  const q = QUIZ[quizI];
+  $('#quizBody').innerHTML = `<p class="muted">第 ${quizI + 1} / ${QUIZ.length} 題・請依直覺作答</p>
+    <p class="quiz-q">${q.q}</p>
+    ${q.a.map((t, i) => `<button class="btn opt ${['blue', '', 'red'][i]}" onclick="answerQuiz(${i + 1})">${'ABC'[i]}. ${t}</button>`).join('')}`;
+}
+function answerQuiz(p) { quizScore += p; quizI++; renderQuiz(); }
+function quizResult() {
+  const sc = quizScore;
+  const type = sc <= 8 ? '趨避型' : sc <= 11 ? '中立型' : '愛好型';
+  const desc = {
+    '趨避型':'偏好穩定，寧可犧牲部分報酬換安心。配置上，債券與現金的比重通常較高。',
+    '中立型':'願意承擔適度風險，換取較高報酬。配置上，股票與債券比重較均衡。',
+    '愛好型':'能承受大幅波動，追求高報酬，更需要分散投資與投資紀律。'
+  }[type];
+  const p = PRESET[type];
+  $('#quizBody').innerHTML = `<p class="quiz-q">${esc(draft.name)}，你的分數是 <b>${sc}</b> 分</p>
+    <div class="card"><div class="ct">風險${type.replace('型', '')}型 <span class="wk">${sc <= 8 ? '5～8' : sc <= 11 ? '9～11' : '12～15'} 分</span></div><p>${desc}</p></div>
+    <p>每年分配時，滑桿會先設成這組建議比例，你可以自己調整：</p>
+    <div class="alloc-bar">${KEYS.map(k => `<span style="width:${p[k]}%;background:${KCOL[k]}"></span>`).join('')}</div>
+    <p class="muted">${KEYS.map(k => `<span class="sw" style="background:${KCOL[k]}"></span>${KNAME[k]} ${p[k]}%`).join('　')}</p>
+    <p class="mt">沒有好壞之分：重點是配置要符合自己的風險承受度。</p>
+    <p class="muted">教學用簡易自評，不構成投資建議。</p>
+    <div class="row mt"><button class="btn green" onclick="showGoals('${type}',${sc})">下一步：選人生目標 ▶</button></div>`;
+}
+let pendingRisk = null;
+function showGoals(type, sc) {
+  pendingRisk = {type, sc};
+  $('#s-goal').innerHTML = `<div class="box">
+    <h2>選一個人生目標</h2>
+    <p>${esc(draft.name)}，28 歲的時候，你最想完成什麼？達成目標，結局 <b>+${GOAL_BONUS} 分</b>，還能拿到「夢想成真」徽章。</p>
+    <div class="goal-grid">${GOALS.map(g => `<button class="goal" data-g="${g.id}" onclick="pickGoal('${g.id}')"><span class="gicon">${g.i}</span><b>${g.n}</b><small>${g.d}</small></button>`).join('')}</div>
+    <p class="muted mt">${draft.mode === 'class' ? `🏫 班級對戰・代碼 ${esc(draft.code)}：全班會遇到同一段十年景氣。` : `🎲 自由模式・本局景氣代碼 ${esc(draft.code)}（玩完可以分享給同學挑戰）。`}</p>
+    <div class="row mt"><button class="btn gray" onclick="show('s-quiz')">◀ 回測驗結果</button><button class="btn green" id="btnGoal" disabled onclick="beginGame()">開始我的十年 ▶</button></div></div>`;
+  show('s-goal');
+}
+function pickGoal(id) {
+  draft.goal = id;
+  document.querySelectorAll('.goal').forEach(b => b.classList.toggle('sel', b.dataset.g === id));
+  $('#btnGoal').disabled = false;
+}
+function beginGame() {
+  S = newState(draft.name, draft.gender, pendingRisk.type, pendingRisk.sc, draft.code, draft.mode, draft.goal);
+  hudPrev = null;
+  nextYear();
+}
+
+/* =====================================================
+   每年：景氣新聞
+===================================================== */
+function nextYear() {
+  S.year++;
+  const prev = S.light;
+  S.light = S.world.light[S.year];
+  S.lightHist[S.year] = S.light;
+  S.cur = null; S.marginYear = false; S.qPending = null;
+  SC.clicked = {}; SC.tx = SC.x; SC.dance = 0; SC.jump = 0;
+  if (S.year === 5) S.living = 264000;               // 出社會：每月 22,000
+  renderNews(S.year > 1 && prev !== S.light ? prev : null);
+  show('s-news');
+  if (S.year > 1 && prev !== S.light) setTimeout(() => BGM.sfx('light'), 200);
+}
+function renderNews(prev) {
+  const L = LIGHTS[S.light], y = S.year;
+  const phase = isWork(y) ? `上班第 ${y - 4} 年，月薪 ${money(S.salary)}` : `大學${'一二三四'[y - 1]}年級，靠家裡生活費和打工`;
+  const dir = prev === null ? '' : S.light < prev ? '轉熱 🔥' : '轉冷 ❄';
+  $('#s-news').innerHTML = `
+  <div class="scene-wrap" id="sceneWrap"><canvas class="scene" id="scene" width="128" height="40" aria-label="角色所在的場景，可以點小人和房間裡的東西"></canvas></div>
+  <p class="scene-hint">👆 點點看小人，還有房間裡會閃的東西</p>
+  <div class="box paper">
+    <div class="mast"><span>第 ${y} 年 財經快報</span><span>${esc(S.name)} ${ageOf(y)} 歲</span></div>
+    <p>${esc(S.name)}今年 ${ageOf(y)} 歲了。${phase}。</p>
+    ${prev !== null ? `<div class="lchange">景氣${dir}：${lightSw(prev)}${LIGHTS[prev].n} → ${lightSw(S.light)}<b>${L.n}</b></div>` : ''}
+    <div class="mt">${lampsHTML(S.light, prev)}</div>
+    <p class="muted mt">本年度${tm('景氣對策信號', '景氣燈號')}：${L.n}（${L.s}）</p>
+    <div class="headline">【${L.n}】${L.head}</div>
+    <div class="kv">
+      <div>央行立場<b>${L.hawk ? tm('鷹派', L.cb) : L.dove ? tm('鴿派', L.cb) : L.cb}</b></div>
+      <div>${tm('名目與實質利率', '定存利率')}<b class="big-num">${(L.dep * 100).toFixed(2)}%</b></div>
+      <div>${tm('通貨膨脹', '通膨率')}（${tm('CPI')}）<b class="big-num">${(L.cpi * 100).toFixed(1)}%</b></div>
+    </div>
+    <p class="mt">💬 ${L.say.replace('升息', tm('升息')).replace('降息', tm('降息')).replace('債券', tm('利率與債券價格反向', '債券'))}</p>
+    ${S.holdBonus ? `<p class="mt">📈 去年大跌時你續抱股票，今年股票 ETF 報酬額外 +15%（遊戲設定，現實不保證反彈）。</p>` : ''}
+    <div class="row mt"><button class="btn green" onclick="askQuiz()">❓ 快問快答，再來年度分配 ▶</button></div>
+  </div>
+  <div class="box dark"><h3>資產變化</h3><canvas class="chart-cv"></canvas><div class="legend"></div></div>`;
+}
+
+/* 每年一題快問快答：答對，年度結算時現金 +2,000、幸福值 +2 */
+function askQuiz() {
+  const y = S.year;
+  if (S.qPending) return goAlloc();
+  const q = QBANK[S.world.quiz[y - 1]], order = S.world.qOrder[y - 1];
+  const bg = modal(`<div class="quizbox"><div class="ct">❓ 快問快答 第 ${y} / 10 題<span class="wk">第 ${q.w} 週</span></div>
+    <p class="quiz-q mt">${q.q}</p>
+    <div id="qOpts">${order.map((k, i) => `<button class="btn opt ${['blue', '', 'pink'][i]}" data-k="${k}">${'ABC'[i]}. ${q.a[k]}</button>`).join('')}</div>
+    <div id="qFb"></div></div>`, [], {locked:true});
+  bg.querySelectorAll('#qOpts .btn').forEach(b => b.onclick = () => {
+    const right = +b.dataset.k === 0;
+    S.qPending = {right, w:q.w, q:q.q};
+    bg.querySelectorAll('#qOpts .btn').forEach(x => { x.disabled = true; if (+x.dataset.k === 0) x.classList.add('right'); });
+    if (!right) b.classList.add('wrong');
+    BGM.sfx(right ? 'right' : 'wrong');
+    bg.querySelector('#qFb').innerHTML = `<div class="card ${right ? 'okc' : 'noc'}"><div class="ct">${right ? '⭕ 答對了！年度結算時現金 +2,000、幸福值 +2' : '❌ 可惜！正確答案是「' + esc(q.a[0]) + '」'}</div><p>${q.ex}</p></div>
+      <div class="row" style="justify-content:flex-end"><button class="btn green" id="qGo">年度分配 ▶</button></div>`;
+    bg.querySelector('#qGo').onclick = () => { bg.remove(); goAlloc(); };
+  });
+}
+
+/* =====================================================
+   年度分配（五個滑桿，合計 100%）
+===================================================== */
+function incomeOf(y) {
+  return isWork(y) ? {inc:S.salary * 12, liv:S.living, txt:`月薪 ${money(S.salary)} × 12`}
+                   : {inc:S.family + S.partTime, liv:S.living, txt:`家裡 ${money(S.family / 12)}＋打工 ${money(S.partTime / 12)}，每月`};
+}
+function goAlloc() {
+  const y = S.year, {inc, liv, txt} = incomeOf(y), disp = inc - liv;
+  const a = S.allocs[S.allocs.length - 1] || PRESET[S.risk];
+  S.cur = {...a};
+  const label = {fun:'🎮 享樂消費', dep:'🏦 定存', bond:'📜 ' + tm('債券'), stk:'📈 股票 ' + tm('ETF'), ins:'🛡 保險'};
+  $('#s-alloc').innerHTML = `
+  <div class="box">
+    <h2>第 ${y} 年：年度分配</h2>
+    <p>${lightSw(S.light)}本年燈號：<b>${LIGHTS[S.light].n}</b>・定存 ${(LIGHTS[S.light].dep * 100).toFixed(2)}%・${LIGHTS[S.light].cb}</p>
+    <table class="mt">
+      <tr><td>年收入（${txt}）</td><td class="num">${money(inc)}</td></tr>
+      <tr><td>必要生活費</td><td class="num neg">−${money(liv)}</td></tr>
+      <tr><th>本年${tm('可支配所得')}</th><th class="num">${money(disp)}</th></tr>
+    </table>
+    <div class="alloc-bar mt" id="aBar"></div>
+    ${KEYS.map(k => `
+    <div class="slider">
+      <label for="sl-${k}"><span class="sw" style="background:${KCOL[k]}"></span>${label[k]}</label>
+      <input type="range" id="sl-${k}" min="0" max="100" step="5" value="${S.cur[k]}" style="--c:${KCOL[k]}" oninput="onSlide('${k}',this.value,${disp})">
+      <span class="pct" id="p-${k}"></span><span class="amt" id="m-${k}"></span>
+    </div>`).join('')}
+    <div class="row mt"><span class="remain" id="aRemain"></span>
+      <button class="btn small blue" onclick="setAlloc({fun:20,dep:20,bond:20,stk:20,ins:20},${disp})">一鍵平均</button>
+      <button class="btn small" onclick="setAlloc(PRESET[S.risk],${disp})">套用測驗建議</button>
+    </div>
+    <p class="muted mt">🛡 保險達可支配所得的 5% 以上，今年就「有保障」；超過沒有額外效果。股票 ETF、債券買進要付${tm('手續費')} 0.1425%。</p>
+    <div class="row mt">
+      <button class="btn gray" onclick="show('s-news')">◀ 回新聞</button>
+      <button class="btn green" id="btnSettle" onclick="submitAlloc()">年度結算 ▶</button>
+    </div>
+  </div>`;
+  updateAlloc(disp);
+  show('s-alloc');
+}
+function onSlide(k, v, disp) { S.cur[k] = +v; updateAlloc(disp); }
+function setAlloc(p, disp) { KEYS.forEach(k => { S.cur[k] = p[k]; $('#sl-' + k).value = p[k]; }); updateAlloc(disp); }
+function updateAlloc(disp) {
+  const sum = KEYS.reduce((s, k) => s + S.cur[k], 0), rem = 100 - sum;
+  KEYS.forEach(k => { $('#p-' + k).textContent = S.cur[k] + '%'; $('#m-' + k).textContent = money(disp * S.cur[k] / 100); });
+  $('#aBar').innerHTML = KEYS.map(k => `<span style="width:${S.cur[k] / Math.max(sum, 100) * 100}%;background:${KCOL[k]}"></span>`).join('');
+  const t = $('#aRemain');
+  t.textContent = rem === 0 ? '剩餘 0% ✔' : rem > 0 ? `剩餘 ${rem}%` : `超過 ${-rem}%`;
+  t.classList.toggle('bad', rem !== 0);
+  $('#btnSettle').disabled = rem !== 0;
+}
+function submitAlloc() {
+  if (KEYS.reduce((s, k) => s + S.cur[k], 0) !== 100) { $('#aRemain').classList.add('shake'); return; }
+  S.allocs.push({...S.cur});
+  const log = {choice:null, evPick:null};
+  const steps = [];
+  if (S.year % 2 === 0) { const card = CARDS.find(c => c.id === S.world.card[S.year]); if (card) steps.push(next => showChoice(card, log, next)); }
+  const ev = findEv(S.world.ev[S.year]);
+  if (ev && ev.opts) steps.push(next => showEvChoice(ev, log, next));
+  const run = () => steps.length ? steps.shift()(run) : settle(log);
+  run();
+}
+
+/* =====================================================
+   意外支出：現金 → 賣債券 → 賣股票（手續費＋ETF 證交稅）→ 刷卡變負債
+===================================================== */
+function pay(amount) {
+  let rem = amount; const parts = [];
+  const c = Math.min(Math.max(S.cash, 0), rem); if (c > 0) { S.cash -= c; rem -= c; parts.push(`現金 ${money(c)}`); }
+  if (rem > 0.5 && S.bond > 0) {
+    const gross = Math.min(S.bond, rem / (1 - FEE)); S.bond -= gross; S.fees += gross * FEE; S.investOut += gross * (1 - FEE); rem -= gross * (1 - FEE);
+    parts.push(`賣債券 ${money(gross)}`);
+  }
+  if (rem > 0.5 && S.stock > 0) {
+    const k = 1 - FEE - ETF_TAX, gross = Math.min(S.stock, rem / k);
+    S.stock -= gross; S.fees += gross * (FEE + ETF_TAX); S.investOut += gross * k; rem -= gross * k;
+    parts.push(`賣股票 ETF ${money(gross)}（扣手續費與證交稅）`);
+  }
+  if (rem > 0.5) { S.debt += rem; parts.push(`<span class="neg">刷卡變負債 ${money(rem)}</span>`); }
+  return '付款方式：' + parts.join(' → ');
+}
+
+/* =====================================================
+   抉擇卡（第五節）：第 2、4、6、8、10 年各一張，不重複
+===================================================== */
+const CARDS = [
+  {id:1, w:16, title:'保證獲利的投資群組', icon:'💸', phase:'all',
+   d:`同學拉你進群組：「老師帶單，每月穩賺 10%！先匯 30,000 入金。」`,
+   opts:[
+     {t:'A. 加入並匯款 30,000', good:false, fn:() => { const p = pay(30000); S.happy -= 10; return `群組隔週就解散了，30,000 元全部拿不回來。幸福值 −10。<br><span class="muted">${p}</span>`; }},
+     {t:'B. 拒絕：保證獲利就是詐騙訊號', good:true, fn:() => `投資一定有風險，「保證獲利、穩賺不賠」就是${tm('投資詐騙')}的訊號。`}
+   ], lesson:'投資詐騙'},
+  {id:2, w:16, title:'假簡訊：包裹未領', icon:'📱', phase:'all',
+   d:`手機收到簡訊：「您的包裹未領，請點連結補繳運費 25 元。」`,
+   opts:[
+     {t:'A. 點連結輸入卡號', good:false, fn:() => { const p = pay(20000); S.happy -= 5; return `信用卡被盜刷 20,000 元。幸福值 −5。<br><span class="muted">${p}</span>`; }},
+     {t:'B. 不點，打 165 查證', good:true, fn:() => `${tm('165反詐騙專線')}確認這是詐騙簡訊。不明連結不要點。`}
+   ], lesson:'數位金融風險'},
+  {id:3, w:16, title:'股市突然大跌 20%', icon:'📉', phase:'all',
+   d:`新聞標題全是「股災！」你的股票 ETF 一夜之間少了兩成，朋友都說快逃。要不要全賣？`,
+   pre:() => { const l = S.stock * .2; S.stock -= l; return l > 1 ? `股票 ETF 先 −20%，帳面少了 ${money(l)}。` : '你手上幾乎沒有股票，這次大跌對你影響不大。但如果有，你會怎麼做？'; },
+   opts:[
+     {t:'A. 全部賣出', good:false, fn:() => { const g = S.stock, k = 1 - FEE - ETF_TAX; S.fees += g * (FEE + ETF_TAX); S.investOut += g * k; S.cash += g * k; S.stock = 0; S.soldPanic = true; return `賣出 ${money(g)} 轉成現金（扣手續費與證交稅），帳面虧損變成真的虧損，也錯過了反彈。這就是${tm('損失趨避')}。`; }},
+     {t:'B. 續抱，照原計畫', good:true, fn:() => { S.holdBonus = .15; return `你沒有被情緒帶著走。下一年股票報酬額外 +15%（遊戲設定，現實不保證反彈）。`; }}
+   ], lesson:'心理偏誤；第 6 週測驗第 1 題'},
+  {id:4, w:11, title:'網紅說 K 線黃金交叉', icon:'📺', phase:'all',
+   d:`財經網紅：「這檔股票${tm('K線')}出現${tm('黃金交叉')}，${tm('外資買賣超', '外資狂買')}！跟單 20,000 元就對了！」`,
+   opts:[
+     {t:'A. 跟單 20,000', good:false, fn:() => {
+       const p = pay(20000), r = -.3 + .6 * S.world.aux[S.year][0], buyFee = 20000 * FEE, val = (20000 - buyFee) * (1 + r), sellCost = val * (FEE + STOCK_TAX), back = val - sellCost;
+       S.fees += buyFee + sellCost; S.cash += back;
+       return `股價 ${pct(r)}，扣掉手續費和個股證交稅 0.3% 後拿回 ${money(back)}（${signMoney(back - 20000)}）。<br><span class="muted">${p}</span>`; }},
+     {t:'B. 不跟：技術指標只是參考', good:true, fn:() => `技術指標只是參考，不是保證。只看圖不看公司，很難穩定獲利。`}
+   ], lesson:'技術分析與籌碼'},
+  {id:5, w:12, title:'題材很熱，但 EPS 連 3 年虧損', icon:'🔥', phase:'all',
+   d:`大家都在討論一檔「題材股」，但你查了${tm('財務報表')}：${tm('EPS')} 連續三年都是負的。`,
+   opts:[
+     {t:'A. 買進 20,000', good:false, fn:() => {
+       const p = pay(20000), win = S.world.aux[S.year][1] < .5, r = win ? .2 : -.6, buyFee = 20000 * FEE, val = (20000 - buyFee) * (1 + r), sellCost = val * (FEE + STOCK_TAX), back = val - sellCost;
+       S.fees += buyFee + sellCost; S.cash += back;
+       return `${win ? '運氣好，股價漲了 20%' : '公司繼續虧錢，股價跌了 60%'}，扣掉費用後拿回 ${money(back)}（${signMoney(back - 20000)}）。<br><span class="muted">${p}</span>`; }},
+     {t:'B. 不買：先看財報再說', good:true, fn:() => `公司一直虧錢，股價只靠話題撐著。先看基本面，才不會被題材帶著走。`}
+   ], lesson:'財報與基本面'},
+  {id:6, w:15, title:'信用卡帳單 30,000', icon:'💳', phase:'all',
+   d:`這個月刷太多，帳單 30,000 元，${tm('最低應繳金額')}只要 3,000 元。`,
+   opts:[
+     {t:'A. 只繳最低 3,000', good:false, fn:() => { const p = pay(3000); S.debt += 27000; S.happy += 2; return `27,000 元變成負債，年利率 15% 的${tm('循環利息')}。幸福值 +2。<br><span class="muted">${p}</span>`; }},
+     {t:'B. 全額繳清 30,000', good:true, fn:() => `全額繳清，不會被收循環利息。<br><span class="muted">${pay(30000)}</span>`}
+   ], lesson:'信用與負債'},
+  {id:7, w:13, title:'學長推薦融資買股', icon:'🎰', phase:'work',
+   d:`學長說：「用${tm('融資')}買股，賺兩倍以上！」`,
+   opts:[
+     {t:'A. 使用融資', good:false, fn:() => { S.marginYear = true; return `今年股票 ETF 報酬率 × 2.5（賺賠都放大），再付融資利息＝股票部位 × 1.5 × 6%；賠光就${tm('斷頭')}歸零。結果在下方明細。`; }},
+     {t:'B. 不用：照常投資', good:true, fn:() => `${tm('槓桿')}會放大獲利，也會放大虧損。不借錢投資是新手最好的保護。`}
+   ], lesson:'融資與槓桿'},
+  {id:8, w:14, title:'朋友的「好消息」', icon:'🤫', phase:'work',
+   d:`朋友說：「我爸公司下週要公布好消息，快買！」`,
+   opts:[
+     {t:'A. 照著買', good:false, fn:() => { const p = pay(50000); S.happy -= 10; return `主管機關查到異常交易，被罰款 50,000 元。幸福值 −10。<br><span class="muted">${p}</span>`; }},
+     {t:'B. 不買：這是內線交易', good:true, fn:() => `知道還沒公開的重大消息去買賣股票，就是${tm('內線交易')}，違法。公司必須做好${tm('資訊揭露')}。`}
+   ], lesson:'內線交易'}
+];
+function showChoice(card, log, next) {
+  S.usedCards.push(card.id);
+  const pre = card.pre ? card.pre() : '';
+  const bg = modal(`<div class="card choice"><div class="ct"><span class="icon">${card.icon}</span>抉擇卡：${card.title}<span class="wk">第 ${card.w} 週</span></div>
+    <p class="mt">${card.d}</p>${pre ? `<p class="neg">${pre}</p>` : ''}</div>
+    <div id="choiceOpts">${card.opts.map((o, i) => `<button class="btn opt ${i ? 'blue' : ''}" data-i="${i}">${o.t}</button>`).join('')}</div>`, [], {locked:true});
+  BGM.sfx('light');
+  bg.querySelectorAll('#choiceOpts .btn').forEach(b => b.onclick = () => {
+    const o = card.opts[+b.dataset.i];
+    const res = o.fn();
+    if (o.good) S.good++;
+    if (card.id === 1 || card.id === 2) o.good ? S.scamSafe++ : S.scamFail++;
+    if (card.id === 3 && o.good) unlock('iron');
+    S.choices.push({y:S.year, title:card.title, pick:o.t, good:o.good, w:card.w});
+    log.choice = {card, pick:o.t, good:o.good, res};
+    bg.remove();
+    next();
+  });
+}
+/* 互動事件：有兩個選項的事件卡，選完才結算 */
+function showEvChoice(ev, log, next) {
+  const bg = modal(`<div class="card"><div class="ct"><span class="icon">${ev.icon}</span>事件卡：${ev.t}${ev.w ? `<span class="wk">第 ${ev.w} 週</span>` : ''}</div>
+    <p class="mt">${ev.d}</p></div>
+    <div id="evOpts">${ev.opts.map((o, i) => `<button class="btn opt ${i ? 'blue' : ''}" data-i="${i}">${o.t}</button>`).join('')}</div>`, [], {locked:true});
+  bg.querySelectorAll('#evOpts .btn').forEach(b => b.onclick = () => {
+    log.evPick = +b.dataset.i;
+    S.evPicks.push({y:S.year, t:ev.t, pick:ev.opts[log.evPick].t});
+    bg.remove();
+    next();
+  });
+}
+
+/* =====================================================
+   隨機事件表（第五節），同一事件不連續兩年出現
+===================================================== */
+const EV_C = [
+  {id:'c0', p:20, t:'平安的一年', icon:'🌤', w:0, safe:true, fn:() => ({txt:'沒有特別的事，平平安安。'})},
+  {id:'c1', p:10, t:'打工時薪調漲', icon:'⏫', w:0, fn:() => { S.partTime *= 1.1; return {txt:`老闆加薪！之後打工收入 +10%（每月 ${money(S.partTime / 12)}）。`}; }},
+  {id:'c2', p:10, t:'拿到獎學金', icon:'🎓', w:0, coin:true, fn:() => ({txt:'成績不錯，現金 +10,000。', gain:10000})},
+  {id:'c3', p:10, t:'手機摔壞', icon:'📱', w:2, fn:ins => ins ? {txt:'有保障，只付自負額 3,000 元。', cost:3000, lsn:`保險分擔損失；但有保險就變得不小心，就是${tm('道德危險')}。`}
+                                                      : {txt:'沒有保障，修手機 15,000 元全部自付。', cost:15000, lsn:`有保險時人容易變得不小心，這叫${tm('道德危險')}，所以保險會設自負額。`}},
+  {id:'c4', p:10, t:'二手機車是「檸檬車」', icon:'🍋', w:2, fn:() => ({txt:'便宜買的二手機車一直壞，維修費 12,000 元。', cost:12000, lsn:`賣方知道車況、你不知道，這是${tm('逆選擇')}，也就是${tm('檸檬問題')}。`})},
+  {id:'c5', p:10, t:'生病住院', icon:'🏥', w:2, sick:true, fn:ins => ins ? {txt:'醫療費 60,000 元，有保障只付 10,000 元。', cost:10000, lsn:'保險在你需要時分擔了大部分醫療費。'}
+                                                      : {txt:'醫療費 60,000 元，沒有保障全部自付。', cost:60000, lsn:'一點點保費，就能幫你分擔大額醫療費。'}},
+  {id:'c6', p:10, t:'台幣升值，日本畢旅變便宜', icon:'🗾', w:4, fn:() => ({txt:'同樣的台幣換到更多日圓，省下 5,000 元。幸福值 +3。', gain:5000, dh:3, lsn:`台幣${tm('升值')}，出國買東西變便宜。`})},
+  {id:'c7', p:10, t:'社團與朋友聚會', icon:'🎉', w:0, fn:() => ({txt:'社團出遊、朋友聚餐，支出 8,000 元。幸福值 +3。', cost:8000, dh:3})},
+  {id:'c8', p:5,  t:'打工的店倒閉', icon:'🏚', w:4, unemp:true, fn:() => { const l = S.partTime / 4; return {txt:`少了 3 個月打工收入 ${money(l)}。幸福值 −3。`, cost:l, dh:-3, lsn:`景氣變差時${tm('失業率')}上升，打工也會受影響。`}; }},
+  {id:'c9', p:5,  t:'物價大漲', icon:'🍱', w:3, fn:() => { S.living *= 1.05; return {txt:`必要生活費額外 +5%，之後持續。`, lsn:`${tm('通貨膨脹')}讓同樣的錢買到的東西變少。`}; }}
+];
+const EV_W = [
+  {id:'w0', p:20, t:'平安的一年', icon:'🌤', w:0, safe:true, fn:() => ({txt:'沒有特別的事，平平安安。'})},
+  {id:'w1', p:10, t:'升職加薪', icon:'⏫', w:0, fn:() => { S.salary *= 1.1; return {txt:`表現被看見！之後年薪額外 +10%（月薪 ${money(S.salary)}）。`}; }},
+  {id:'w2', p:10, t:'年終獎金', icon:'🧧', w:0, coin:true, fn:() => ({txt:`現金 +1 個月薪水 ${money(S.salary)}。`, gain:S.salary})},
+  {id:'w3', p:10, t:'加班獎金', icon:'🌙', w:0, coin:true, fn:() => ({txt:'連續加班一個月，現金 +15,000，但好累。幸福值 −2。', gain:15000, dh:-2})},
+  {id:'w4', p:5,  t:'台幣貶值，出口公司加發年終', icon:'🚢', w:4, coin:true, fn:() => ({txt:`公司賣到國外的貨換回更多台幣，現金 +2 個月薪水 ${money(S.salary * 2)}。`, gain:S.salary * 2, lsn:`台幣${tm('貶值')}，出口公司把外幣換回台幣會變多，獲利跟著增加。`})},
+  {id:'w5', p:10, t:'生病住院', icon:'🏥', w:2, sick:true, fn:ins => ins ? {txt:'醫療費 100,000 元，有保障只付 20,000 元。', cost:20000, lsn:'保險在你需要時分擔了大部分醫療費。'}
+                                                      : {txt:'醫療費 100,000 元，沒有保障全部自付。', cost:100000, lsn:'一點點保費，就能幫你分擔大額醫療費。'}},
+  {id:'w6', p:10, t:'機車被偷、筆電壞掉', icon:'💻', w:15, fn:() => ({txt:'禍不單行，支出 30,000 元。', cost:30000, lsn:`有${tm('緊急預備金')}，就不用賣股票或刷卡應急。`})},
+  {id:'w7', p:10, t:'朋友結婚與聚會', icon:'💒', w:0, fn:() => ({txt:'包紅包、聚餐，支出 12,000 元。幸福值 +3。', cost:12000, dh:3})},
+  {id:'w8', p:5,  t:'二手車是「檸檬車」', icon:'🍋', w:2, fn:() => ({txt:'買到有問題的二手車，維修費 25,000 元。', cost:25000, lsn:`買方資訊比賣方少，容易買到爛貨，這是${tm('逆選擇')}。`})},
+  {id:'w9', p:5,  t:'失業三個月', icon:'📦', w:4, unemp:true, fn:() => ({txt:`公司裁員，少領 3 個月薪水 ${money(S.salary * 3)}。幸福值 −5。`, cost:S.salary * 3, dh:-5, lsn:`景氣低迷時${tm('失業率')}上升，這時最需要${tm('緊急預備金')}。`})},
+  {id:'w10', p:5, t:'物價大漲', icon:'🍱', w:3, fn:() => { S.living *= 1.05; return {txt:`必要生活費額外 +5%，之後持續。`, lsn:`${tm('通貨膨脹')}讓同樣的錢買到的東西變少。`}; }}
+];
+/* 互動事件（兩個選項）：v0.7 新增，讓奇數年也有選擇 */
+const EV_CI = [
+  {id:'ci1', p:8, t:'朋友跟你借錢', icon:'🤝', w:15, d:'好朋友說手頭很緊，想跟你借 10,000 元，「下個月一定還」。',
+   opts:[
+     {t:'A. 借他 10,000', fn:(ins, a) => a < .5 ? {txt:'朋友隔月就把錢還你，還請你吃了一頓飯。幸福值 +2。', dh:2}
+                                              : {txt:'朋友一直拖著沒還，10,000 元拿不回來了。幸福值 −4。', cost:10000, dh:-4, lsn:'借錢給別人前，先想好「拿不回來也沒關係」的金額。'}},
+     {t:'B. 婉拒，請他想別的辦法', fn:() => ({txt:'你婉拒了，朋友有點失望。幸福值 −2。', dh:-2})}]},
+  {id:'ci2', p:8, t:'偶像開演唱會', icon:'🎤', w:15, d:'你最喜歡的歌手來台灣開演唱會，門票加交通要 6,000 元。',
+   opts:[
+     {t:'A. 衝！買票', fn:() => ({txt:'超嗨的一晚！支出 6,000 元。幸福值 +6。', cost:6000, dh:6, lsn:'想要的東西用「享樂預算」買，玩得開心又不影響存錢計畫。'})},
+     {t:'B. 忍住，下次再說', fn:() => ({txt:'省下 6,000 元，但有點遺憾。幸福值 −2。', dh:-2, lsn:'分清楚「需要」和「想要」。'})}]},
+  {id:'ci3', p:8, t:'學長介紹家教工作', icon:'📚', w:15, d:'學長問你要不要多接一份家教，一年可以多賺 15,000 元，但會很忙。',
+   opts:[
+     {t:'A. 接！多賺一點', fn:() => ({txt:'多賺 15,000 元，但每天都好累。幸福值 −4。', gain:15000, dh:-4})},
+     {t:'B. 專心讀書和社團', fn:() => ({txt:'生活比較平衡，期末成績也不錯。幸福值 +2。', dh:2})}]}
+];
+const EV_WI = [
+  {id:'wi1', p:8, t:'獵人頭來挖角', icon:'💼', w:15, d:'另一家公司開出月薪多 8% 的條件，但要重新適應新環境。',
+   opts:[
+     {t:'A. 跳槽，月薪 +8%', fn:() => { S.salary *= 1.08; return {txt:`新公司月薪 ${money(S.salary)}，但適應期壓力很大。幸福值 −3。`, dh:-3}; }},
+     {t:'B. 留在原公司', fn:() => ({txt:'熟悉的同事和環境，工作很順手。幸福值 +2。', dh:2})}]},
+  {id:'wi2', p:8, t:'朋友邀你合夥開飲料店', icon:'🧋', w:6, d:'朋友想開手搖飲料店，邀你出資 50,000 元當股東：「做起來一年就回本！」',
+   opts:[
+     {t:'A. 出資 50,000', fn:(ins, a) => a < .3 ? {txt:'生意不錯！一年後拿回 80,000 元（賺 30,000）。幸福值 +3。', cost:50000, gain:80000, dh:3, lsn:'這次運氣好。高報酬一定伴隨高風險。'}
+                                              : {txt:'附近同時開了三家，半年就收掉，50,000 元全部虧光。幸福值 −5。', cost:50000, dh:-5, lsn:'投入前先想最壞的情況：這筆錢虧光，生活還過得下去嗎？'}},
+     {t:'B. 不參加', fn:() => ({txt:'你決定把錢留在自己的資產配置裡。'})}]},
+  {id:'wi3', p:8, t:'新款手機發表', icon:'📱', w:15, d:'最新旗艦手機上市，要 45,000 元。你的舊手機其實還能用。',
+   opts:[
+     {t:'A. 買新手機', fn:() => ({txt:'新手機好好用！支出 45,000 元。幸福值 +4。', cost:45000, dh:4})},
+     {t:'B. 舊的繼續用', fn:() => ({txt:'省下 45,000 元。幸福值 −1。', dh:-1, lsn:'「想要」不等於「需要」，省下的錢可以讓複利滾得更大。'})}]}
+];
+function drawEvent(y, light, last, R) {
+  const table = isWork(y) ? EV_W.concat(EV_WI) : EV_C.concat(EV_CI);
+  const cold = light >= 3;                        // 藍燈、黃藍燈：失業機率加倍，多的從「平安的一年」扣
+  const unempExtra = cold ? table.filter(e => e.unemp).reduce((s, e) => s + e.p, 0) : 0;
+  const pool = table.filter(e => e.id !== last);
+  const wts = pool.map(e => e.unemp && cold ? e.p * 2 : e.safe ? Math.max(0, e.p - unempExtra) : e.p);
+  let r = R() * wts.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < pool.length; i++) { r -= wts[i]; if (r <= 0) return pool[i].id; }
+  return pool[pool.length - 1].id;
+}
+const findEv = id => EV_C.concat(EV_CI, EV_W, EV_WI).find(e => e.id === id);
+
+/* =====================================================
+   年度結算（第四節結算順序）
+   分配入帳 → 利息與報酬 → 隨機事件 → 負債加利息、現金自動還債 → 幸福值 → 加薪與通膨
+===================================================== */
+function settle(log) {
+  const y = S.year, L = LIGHTS[S.light], a = S.allocs[S.allocs.length - 1];
+  const {inc, liv} = incomeOf(y), disp = inc - liv;
+  const amt = {}; KEYS.forEach(k => amt[k] = disp * a[k] / 100);
+  const prev = {cash:S.cash, bond:S.bond, stock:S.stock, debt:S.debt, happy:S.happy};
+
+  // 1. 分配入帳
+  S.cash += amt.dep;
+  const buyFee = (amt.bond + amt.stk) * FEE;
+  S.bond += amt.bond * (1 - FEE); S.stock += amt.stk * (1 - FEE); S.fees += buyFee;
+  S.investIn += amt.bond + amt.stk;
+  const insured = a.ins > 0 && amt.ins >= disp * .05 - 0.5;
+  if (insured) S.insuredYears++;
+
+  // 2. 定存利息、債券與股票報酬
+  if (S.debt > 0.5) S.everDebt = true;
+  const rS = L.stk[0] + S.world.u[y] * (L.stk[1] - L.stk[0]) + S.holdBonus; const bonusUsed = S.holdBonus; S.holdBonus = 0;
+  const margin = S.marginYear;
+  let marginTxt = '';
+  const base = Math.max(S.cash, 0) + S.bond + S.stock;
+  const gC = Math.max(S.cash, 0) * L.dep, gB = S.bond * L.bond;
+  let gS;
+  S.cash += gC; S.bond += gB;
+  if (margin) {
+    const pos = S.stock, interest = pos * 1.5 * .06;
+    gS = pos * rS * 2.5;
+    if (pos + gS <= 0) { gS = -pos; marginTxt = `融資：股市 ${pct(rS)} × 2.5 倍，股票部位賠光，被${tm('斷頭')}歸零！`; unlock('margin'); }
+    else marginTxt = `融資：股市 ${pct(rS)} × 2.5 倍＝${pct(rS * 2.5)}。`;
+    S.stock = pos + gS;
+    const p = interest > 0.5 ? pay(interest) : '';
+    marginTxt += ` 融資利息 ${money(interest)}（股票部位 × 1.5 × 6%）。${p ? `<br><span class="muted">${p}</span>` : ''}`;
+  } else {
+    gS = S.stock * rS;
+    S.stock += gS;
+  }
+  const rP = base > 0 ? (gC + gB + gS) / base : 0;
+
+  // 3. 隨機事件
+  const ev = findEv(S.world.ev[y]);
+  const pickI = ev.opts ? (log.evPick ?? 1) : null;
+  const r = ev.opts ? ev.opts[pickI].fn(insured, S.world.aux[y][2]) : ev.fn(insured);
+  let payTxt = '';
+  if (r.cost) payTxt = pay(r.cost);
+  if (r.gain) S.cash += r.gain;
+  if (ev.sick) { if (insured) { S.sickIns++; unlock('insured'); } else S.sickNoIns++; }
+  if (ev.id === 'c4' || ev.id === 'w8') unlock('lemon');
+  const evOut = {ev, pick:pickI !== null ? ev.opts[pickI].t : null, txt:r.txt, pay:payTxt, gain:r.gain || 0, cost:r.cost || 0, dh:r.dh || 0, lsn:r.lsn};
+
+  // 4. 負債加利息、用現金自動還債
+  let debtInt = 0, repaid = 0;
+  if (S.debt > 0.5) {
+    debtInt = S.debt * CARD_RATE; S.debt += debtInt;
+    repaid = Math.min(Math.max(S.cash, 0), S.debt); S.cash -= repaid; S.debt -= repaid;
+    if (S.debt < 0.5) S.debt = 0;
+  }
+
+  // 5. 幸福值：享樂比例＋事件＋負債
+  const f = a.fun, dhFun = f < 10 ? -8 : f < 20 ? -3 : f < 35 ? 3 : 6;
+  const dhDebt = S.debt > 0.5 ? -5 : 0;
+  if (S.debt > 0.5) S.everDebt = true;
+  // 快問快答獎勵
+  let quizOut = null;
+  if (S.qPending) { quizOut = S.qPending; S.quizLog.push({y, ...quizOut}); if (quizOut.right) S.cash += 2000; S.qPending = null; }
+  const dhQuiz = quizOut && quizOut.right ? 2 : 0;
+  S.happy = clamp(Math.round(S.happy + dhFun + evOut.dh + dhDebt + dhQuiz), 0, 100);
+  if (S.happy >= 100) unlock('happy');
+
+  // 6. 加薪與通膨（下一年生效）
+  const livOld = S.living;
+  S.living *= 1 + L.cpi;
+  if (isWork(y)) S.salary *= 1.03;
+  S.cpiIdx *= 1 + L.cpi;
+  if (S.bond > 1 && S.stock > 1) S.bothYears++;
+
+  S.hist.push({y, age:ageOf(y) + 1, cash:S.cash, bond:S.bond, stock:S.stock, debt:S.debt, total:total(), light:S.light, rS, rP, ev:ev.t});
+  if (total() >= 1000000) unlock('million');
+  if (typeof document !== 'undefined' && !settle.silent) {
+    renderResult({y, L, a, amt, inc, liv, disp, prev, gC, gB, gS, rS, bonusUsed, margin, buyFee, insured, dhFun, dhDebt, evOut, debtInt, repaid, log, marginTxt, livOld, quizOut, dhQuiz});
+    show('s-result');
+    const dTot = total() - (prev.cash + prev.bond + prev.stock - prev.debt);
+    if (rS > .1 || evOut.ev.coin) setTimeout(() => { coinBurst(); BGM.sfx('coin'); }, 350);
+    else setTimeout(() => BGM.sfx(dTot >= 0 ? 'coin' : 'lose'), 350);
+  }
+}
+
+function renderResult(R) {
+  const c = R.log.choice, h = S.hist[S.hist.length - 1], E = R.evOut;
+  const g = v => `<span class="${v < 0 ? 'neg' : 'pos'}">${signMoney(v)}</span>`;
+  $('#s-result').innerHTML = `
+  <div class="box">
+    <h2>第 ${R.y} 年 年度結算</h2>
+    <p>${lightSw(S.light)}${R.L.n}・${R.L.cb}・${esc(S.name)} ${ageOf(R.y)} 歲</p>
+    ${c ? `<div class="card choice"><div class="ct"><span class="icon">${c.card.icon}</span>${c.card.title}<span class="wk">第 ${c.card.w} 週</span></div>
+      <p class="mt">你選擇：<b>${c.pick}</b>　${c.good ? '<span class="pos">✓ 較佳選項</span>' : '<span class="neg">✗</span>'}</p><p>${c.res}</p>${lesson(c.card.w, c.card.lesson)}</div>` : ''}
+    <div class="card"><div class="ct"><span class="icon">${E.ev.icon}</span>事件卡：${E.ev.t}${E.ev.w ? `<span class="wk">第 ${E.ev.w} 週</span>` : ''}</div>
+      ${E.pick ? `<p class="mt">你選擇：<b>${E.pick}</b></p>` : ''}<p class="mt">${E.txt}</p>${E.pay ? `<p class="muted">${E.pay}</p>` : ''}${E.lsn ? lesson(E.ev.w || 15, E.lsn) : ''}</div>
+    <h3>💰 本年金額變化明細</h3>
+    <table>
+      <tr><td>可支配所得（收入 ${money(R.inc)} − 生活費 ${money(R.liv)}）</td><td class="num">${money(R.disp)}</td></tr>
+      ${KEYS.map(k => `<tr><td>　<span class="sw" style="background:${KCOL[k]}"></span>${KNAME[k]} ${R.a[k]}%${k === 'ins' ? (R.insured ? ' <span class="pos">有保障</span>' : ' <span class="neg">沒保障</span>') : ''}</td><td class="num">${money(R.amt[k])}</td></tr>`).join('')}
+      <tr><td>${tm('手續費')}（買進 0.1425%）</td><td class="num">${g(-R.buyFee)}</td></tr>
+      <tr><td>定存利息 ${pct(R.L.dep, 2)}</td><td class="num">${g(R.gC)}</td></tr>
+      <tr><td>${tm('債券')}報酬 ${pct(R.L.bond)}</td><td class="num">${g(R.gB)}</td></tr>
+      <tr><td>股票 ${tm('ETF')} 報酬 ${pct(R.rS)}${R.bonusUsed ? '（含續抱 +15%）' : ''}${R.margin ? '（融資 × 2.5）' : ''}</td><td class="num">${g(R.gS)}</td></tr>
+      ${R.marginTxt ? `<tr><td colspan="2">${R.marginTxt}</td></tr>` : ''}
+      ${R.quizOut ? `<tr><td>❓ 快問快答${R.quizOut.right ? '答對獎勵' : '（答錯，沒有獎勵）'}</td><td class="num">${R.quizOut.right ? g(2000) : '—'}</td></tr>` : ''}
+      ${E.gain ? `<tr><td>事件收入</td><td class="num">${g(E.gain)}</td></tr>` : ''}
+      ${E.cost ? `<tr><td>事件支出</td><td class="num">${g(-E.cost)}</td></tr>` : ''}
+      ${R.debtInt ? `<tr><td>負債利息 15%（${tm('循環利息')}）</td><td class="num">${g(-R.debtInt)}</td></tr>` : ''}
+      ${R.repaid ? `<tr><td>用現金自動還債</td><td class="num">${money(R.repaid)}</td></tr>` : ''}
+      <tr><td>${tm('通貨膨脹', '通膨')} ${(R.L.cpi * 100).toFixed(1)}%：明年必要生活費</td><td class="num">${money(R.livOld)} → ${money(S.living)}</td></tr>
+    </table>
+    <h3>💗 幸福值 ${R.prev.happy} → ${S.happy}</h3>
+    <p class="muted">享樂 ${R.a.fun}%：${R.dhFun > 0 ? '+' : '−'}${Math.abs(R.dhFun)}${E.dh ? `・事件 ${E.dh > 0 ? '+' : '−'}${Math.abs(E.dh)}` : ''}${R.dhDebt ? '・有負債 −5' : ''}${R.dhQuiz ? '・答對 +2' : ''}${c && /幸福值/.test(c.res) ? '・抉擇卡已先計入' : ''}</p>
+    <h3>📦 年底資產</h3>
+    <div class="kv">
+      <div><span class="sw" style="background:#00E436"></span>現金<b id="kv-cash"></b></div>
+      <div><span class="sw" style="background:#83769C"></span>債券<b id="kv-bond"></b></div>
+      <div><span class="sw" style="background:#FFEC27"></span>股票 ETF<b id="kv-stock"></b></div>
+      <div><span class="sw" style="background:#FF004D"></span>負債<b id="kv-debt"></b></div>
+      <div>總資產<b id="kv-total"></b></div>
+    </div>
+    <div class="row mt">
+      ${R.y < 10 ? `<button class="btn green big" onclick="goNext()">下一年 ▶</button>` : `<button class="btn green big" onclick="goEnd()">看結局 ★</button>`}
+    </div>
+    ${R.y < 10 ? '<p class="muted">按「下一年」會自動存檔。</p>' : ''}
+  </div>
+  <div class="box dark"><h3>資產變化</h3><canvas class="chart-cv"></canvas><div class="legend"></div></div>`;
+  const p = R.prev;
+  tick($('#kv-cash'), p.cash, h.cash, {delta:true}); tick($('#kv-bond'), p.bond, h.bond, {delta:true});
+  tick($('#kv-stock'), p.stock, h.stock, {delta:true}); tick($('#kv-debt'), p.debt, h.debt, {delta:true});
+  tick($('#kv-total'), p.cash + p.bond + p.stock - p.debt, h.total, {delta:true});
+}
+
+function goNext() {
+  autoSave(() => { if (S.year === 4) return showGrad(); nextYear(); });
+}
+function showGrad() {
+  $('#s-grad').innerHTML = `<div class="box center">
+    <h2 class="pf" style="font-size:20px;color:var(--plum)">GRADUATION!</h2>
+    <h2>畢業了！</h2>
+    <div class="row" style="justify-content:center;gap:24px;margin:16px 0">${spriteHTML('gA', 96)}<span class="pf" style="font-size:24px">→</span>${spriteHTML('gB', 96)}</div>
+    <p>${esc(S.name)}大學畢業，找到第一份工作，月薪 <b>35,000</b> 元，之後每年自動加薪 3%。</p>
+    <p>但從現在開始要自己付房租和伙食，必要生活費每月 <b>22,000</b> 元。</p>
+    <p class="muted">${tm('生命週期')}改變，理財方式也要調整。上班族階段的抉擇卡會出現${tm('融資')}和${tm('內線交易')}，小心！</p>
+    <button class="btn green big mt" onclick="nextYear()">開始上班 ▶</button></div>`;
+  show('s-grad');
+  drawSprite($('#gA'), S.gender, {mood:S.happy, phase:'grad'});
+  drawSprite($('#gB'), S.gender, {mood:S.happy, phase:'work'});
+  coinBurst(16); BGM.sfx('up');
+}
+
+/* =====================================================
+   像素折線圖（<canvas> 自己畫）
+===================================================== */
+function drawChart(cv) {
+  if (!S || !cv) return;
+  const data = S.hist;
+  const dpr = window.devicePixelRatio || 1;
+  const W = cv.clientWidth || 600, H = cv.clientHeight || 270;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
+  const padL = 52, padR = 14, padT = 22, padB = 48;
+  const hasDebt = data.some(d => d.debt > 0.5);
+  const series = [
+    {k:'cash',  n:'現金',     c:'#00E436', w:3},
+    {k:'bond',  n:'債券',     c:'#83769C', w:3},
+    {k:'stock', n:'股票 ETF', c:'#FFEC27', w:3},
+    {k:'total', n:'總資產',   c:'#FFF1E8', w:5}
+  ];
+  if (hasDebt) series.push({k:'debt', n:'負債', c:'#FF004D', w:3});
+  const vals = data.flatMap(d => series.map(s => d[s.k]));
+  let max = Math.max(50000, ...vals), min = Math.min(0, ...vals);
+  const stepV = niceStep((max - min) / 4); max = Math.ceil(max / stepV) * stepV; min = Math.floor(min / stepV) * stepV;
+  const X = i => Math.round(padL + (W - padL - padR) * i / 10);
+  const Y = v => Math.round(padT + (H - padT - padB) * (1 - (v - min) / (max - min)));
+  ctx.fillStyle = '#10183a'; ctx.fillRect(0, 0, W, H);
+  ctx.font = "13px Cubic11, 'Noto Sans TC', sans-serif"; ctx.textBaseline = 'middle';
+  for (let v = min; v <= max + 1; v += stepV) {
+    const yy = Y(v);
+    ctx.fillStyle = 'rgba(255,255,255,.14)'; for (let x = padL; x < W - padR; x += 6) ctx.fillRect(x, yy, 3, 2);
+    ctx.fillStyle = '#C2C3C7'; ctx.textAlign = 'right'; ctx.fillText(v === 0 ? '0' : (v / 10000) + '萬', padL - 6, yy);
+  }
+  // 畢業虛線（大學 4 年與上班之間）
+  const gx = X(4);
+  ctx.fillStyle = '#FF77A8';
+  for (let yy = padT; yy < H - padB; yy += 8) ctx.fillRect(gx - 1, yy, 2, 4);
+  ctx.textAlign = 'center'; ctx.fillText('畢業', gx, padT - 10);
+  // X 軸：年齡，下方標出當年燈號顏色
+  for (let i = 0; i <= 10; i++) {
+    ctx.fillStyle = '#C2C3C7'; ctx.fillText(18 + i, X(i), H - padB + 12);
+    const li = data[i] ? data[i].light : null;
+    if (li !== null && li !== undefined) {
+      const c = LIGHTS[li].c;
+      ctx.fillStyle = '#000'; ctx.fillRect(X(i) - 7, H - padB + 22, 14, 14);
+      ctx.fillStyle = c[0]; ctx.fillRect(X(i) - 5, H - padB + 24, 10, 5);
+      ctx.fillStyle = c[1]; ctx.fillRect(X(i) - 5, H - padB + 29, 10, 5);
+    }
+  }
+  // 方塊組成的像素線
+  series.forEach(s => {
+    ctx.fillStyle = s.c;
+    for (let i = 1; i < data.length; i++) pixLine(ctx, X(i - 1), Y(data[i - 1][s.k]), X(i), Y(data[i][s.k]), s.w);
+  });
+  series.forEach(s => data.forEach((d, i) => { ctx.fillStyle = '#000'; ctx.fillRect(X(i) - 5, Y(d[s.k]) - 5, 10, 10); ctx.fillStyle = s.c; ctx.fillRect(X(i) - 3, Y(d[s.k]) - 3, 6, 6); }));
+  const lg = cv.parentElement.querySelector('.legend');
+  if (lg) lg.innerHTML = series.map(s => `<span><i style="background:${s.c}"></i>${s.n}</span>`).join('') + '<span class="muted">X 軸是年齡；下方小方塊是那一年的景氣燈號</span>';
+}
+function pixLine(ctx, x0, y0, x1, y1, w) {
+  const dx = x1 - x0, dy = y1 - y0, n = Math.max(1, Math.round(Math.max(Math.abs(dx), Math.abs(dy)) / 2));
+  for (let i = 0; i <= n; i++) {
+    const x = Math.round((x0 + dx * i / n) / 2) * 2, y = Math.round((y0 + dy * i / n) / 2) * 2;
+    ctx.fillRect(x - (w >> 1), y - (w >> 1), w, w);
+  }
+}
+function niceStep(x) { const p = Math.pow(10, Math.floor(Math.log10(Math.max(x, 1)))); const m = x / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
+let rzT; window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => document.querySelectorAll('section.screen:not(.hidden) canvas.chart-cv').forEach(drawChart), 150); });
+
+/* =====================================================
+   結局評分（第六節）
+===================================================== */
+const GRADE_CUT = {S:290, A:260, B:230, C:190};   // v0.7：加入快問快答、人生目標後重新模擬調整
+function computeEnding(st = S) {
+  const tot = total(st), b = [];
+  if (st.cash >= st.living / 2) b.push(['結局現金 ≥ 6 個月必要生活費（有緊急預備金）', 20]);
+  if (st.insuredYears >= 10) b.push(['10 年都有保險保障', 10]);
+  if (st.bothYears >= 7) b.push([`${st.bothYears} 年同時投資債券與股票（有分散）`, 10]);
+  if (st.good) b.push([`抉擇卡選到較佳選項 ${st.good} 張`, st.good * 5]);
+  const gl = goalOf(st); if (gl && gl.ok(st)) b.push([`達成人生目標：${gl.i} ${gl.n}`, GOAL_BONUS]);
+  if (st.debt > 0.5) b.push(['結局仍有負債', -30]);
+  if (st.happy < 30) b.push(['結局幸福值低於 30（生活太苦）', -20]);
+  const base = Math.round(tot / 10000);
+  const score = base + st.happy + b.reduce((s, x) => s + x[1], 0);
+  const grade = score >= GRADE_CUT.S ? 'S' : score >= GRADE_CUT.A ? 'A' : score >= GRADE_CUT.B ? 'B' : score >= GRADE_CUT.C ? 'C' : 'D';
+  return {tot, base, b, score, grade};
+}
+const avg = (arr, f) => arr.length ? arr.reduce((s, x) => s + f(x), 0) / arr.length : 0;
+function avgReturn() { return avg(S.hist.slice(1), h => h.rP || 0); }
+function comments() {
+  const out = [], al = S.allocs;
+  const yrs = al.map((a, i) => ({a, l:S.lightHist[i + 1]}));
+  // 1. 燈號操作
+  const hot = yrs.filter(x => x.l <= 1), cold = yrs.filter(x => x.l >= 3);
+  if (hot.length && cold.length) {
+    const hS = avg(hot, x => x.a.stk), cS = avg(cold, x => x.a.stk);
+    if (cS > hS) out.push([4, '逆向操作', `你在景氣低迷時加碼、過熱時減碼，這就是第 4 週的「${tm('逆向操作')}」。`]);
+    else if (hS > cS) out.push([4, '小心追高', '你在景氣過熱時買最多股票，容易追高。可以回想第 4 週的燈號逆向操作。']);
+  }
+  // 2. 投資比例
+  const inv = avg(al, a => a.bond + a.stk), r = avgReturn();
+  if (inv >= 30) {
+    if (r > 0.001) out.push([6, '很早開始投資', `你很早就開始投資。以你的平均報酬率 ${(r * 100).toFixed(1)}%，依${tm('72法則')}約 ${(72 / (r * 100)).toFixed(1)} 年就能翻倍。`]);
+    else out.push([6, '很早開始投資', `你很早就開始投資，雖然這 10 年平均報酬不理想，但長期持續投入才能讓${tm('複利')}發揮。`]);
+  } else if (inv < 10) out.push([6, '都放定存', `錢幾乎都放定存，${tm('實質報酬')}可能追不上通膨（第 6 週）。`]);
+  // 3. 紀律（第 9 週）
+  const stopped = al.filter(a => a.stk === 0).length;
+  if (stopped === 0) out.push([9, '紀律', `你每年都持續投入，這就是${tm('定期定額')}的紀律。`]);
+  else if (stopped >= 3) out.push([9, '紀律', '投入時斷時續，複利效果會打折。']);
+  // 4. 分散
+  if (S.bothYears === 0) out.push([6, '沒有分散', `放在同一種資產，波動很大。可以試試第 6 週的${tm('資產配置')}。`]);
+  // 5. 風險屬性
+  const st = avg(al, a => a.stk), actual = st <= 20 ? '趨避型' : st <= 40 ? '中立型' : '愛好型';
+  if (actual !== S.risk) out.push([6, '風險屬性', `測驗說你是${S.risk}，但你的配置偏向${actual}。記得配置要符合自己的風險承受度。`]);
+  // 6. 其他
+  if (S.cash >= S.living / 2) out.push([15, '緊急預備金', `你存好了${tm('緊急預備金')}，遇到意外也不慌。`]);
+  if (S.debt > 0.5) out.push([15, '負債', '卡債年利率 15%，會越滾越大，要先存緊急預備金。']);
+  if (S.sickIns) out.push([2, '保險', '保險在你住院時幫你分擔了大部分醫療費。']);
+  if (S.sickNoIns) out.push([2, '保險', '住院費全部自付，一點保費就能幫你分擔。']);
+  if (S.happy < 30) out.push([0, '生活品質', '存了錢卻過得不開心，理財也要照顧生活品質。']);
+  return out.slice(0, 4);
+}
+/* 退休試算：維持平均存款與投資比例、平均報酬率、每年加薪 3%，從 28 歲到 65 歲 */
+function retirement() {
+  const ratio = avg(S.allocs, a => a.dep + a.bond + a.stk) / 100;
+  const r = clamp(avgReturn(), -.05, .15);
+  let bal = Math.max(total(), 0), c = Math.max(0, (S.salary * 12 - S.living) * ratio);
+  const c0 = c;
+  for (let k = 0; k < 37; k++) { bal = bal * (1 + r) + c; c *= 1.03; }
+  return {bal, c0, r, ratio};
+}
+function endBadges(e) {
+  const yrs = S.allocs.map((a, i) => ({a, l:S.lightHist[i + 1]}));
+  const hot = yrs.filter(x => x.l <= 1), cold = yrs.filter(x => x.l >= 3);
+  if (hot.length && cold.length && avg(cold, x => x.a.stk) > avg(hot, x => x.a.stk)) unlock('contra');
+  if (S.scamSafe > 0 && S.scamFail === 0) unlock('antiscam');
+  const right = S.quizLog.filter(q => q.right).length;
+  if (right >= 8) unlock('scholar');
+  if (right >= 10) unlock('perfect');
+  const gl = goalOf(S); if (gl && gl.ok(S)) unlock('goal');
+  if (!S.everDebt && S.debt < 1) unlock('nodebt');
+  if (e.grade === 'S') unlock('legend');
+}
+function goEnd() {
+  S.finished = true;
+  const e = computeEnding();
+  endBadges(e);
+  if (!S.ranked) { addRank(e); S.ranked = true; }
+  autoSave(() => renderEnd(e), true);
+}
+function renderEnd(e = computeEnding()) {
+  const real = e.tot / S.cpiIdx;
+  const bsNow = S.bond + S.stock, invGain = bsNow + S.investOut - S.investIn;
+  const rt = retirement();
+  const gradeTxt = {S:'理財大師', A:'理財高手', B:'穩健前進', C:'還在學習', D:'重新出發'}[e.grade];
+  $('#s-end').innerHTML = `
+  <div class="box center">
+    <p class="pf" style="font-size:12px;color:var(--plum)">10 YEARS LATER…</p>
+    <div class="row" style="justify-content:center;gap:24px;margin:10px 0">${spriteHTML('eA', 110)}
+      <div><div class="grade g-${e.grade}">${e.grade}</div><div style="font-size:20px">${gradeTxt}</div></div></div>
+    <p style="font-size:20px">${esc(S.name)}，28 歲，總分 <b>${e.score}</b></p>
+    <p>總資產 <b>${money(e.tot)}</b>・幸福值 <b>${S.happy}</b>・風險${S.risk}</p>
+  </div>
+  <div class="box">
+    <h3>🧮 總分＝總資產 ÷ 10,000＋幸福值＋加減分</h3>
+    <table>
+      <tr><td>總資產 ÷ 10,000</td><td class="num">${e.base}</td></tr>
+      <tr><td>幸福值</td><td class="num">${S.happy}</td></tr>
+      ${e.b.map(x => `<tr><td>${x[0]}</td><td class="num ${x[1] < 0 ? 'neg' : 'pos'}">${x[1] > 0 ? '+' : '−'}${Math.abs(x[1])}</td></tr>`).join('')}
+      <tr><th>總分</th><th class="num">${e.score}</th></tr>
+    </table>
+    <p class="muted">S ≥ ${GRADE_CUT.S}・A ${GRADE_CUT.A}～${GRADE_CUT.S - 1}・B ${GRADE_CUT.B}～${GRADE_CUT.A - 1}・C ${GRADE_CUT.C}～${GRADE_CUT.B - 1}・D 未滿 ${GRADE_CUT.C}</p>
+  </div>
+  <div class="box">
+    <h3>⭐ 人生目標與挑戰</h3>
+    ${goalOf(S) ? `<div class="goal-res ${goalOf(S).ok(S) ? 'ok' : ''}"><span class="gicon">${goalOf(S).i}</span><div><b>${goalOf(S).n}：${goalOf(S).ok(S) ? '達成！+' + GOAL_BONUS + ' 分' : '差一點，沒有達成'}</b><br><small>${goalOf(S).d}</small></div></div>` : ''}
+    <p class="mt">❓ 快問快答答對 <b>${S.quizLog.filter(q => q.right).length} / ${S.quizLog.length}</b> 題${S.quizLog.some(q => !q.right) ? `，答錯的是第 ${S.quizLog.filter(q => !q.right).map(q => q.w).join('、')} 週的觀念，可以回去複習` : '，全對太強了！'}。</p>
+    <h3>🏅 這一局拿到的徽章</h3>
+    ${(S.badges || []).length ? `<div class="badge-grid">${S.badges.map(id => BADGES.find(b => b.id === id)).map(b => `<div class="badge got"><div class="bicon">${b.i}</div><b>${b.n}</b><small>${b.d}</small></div>`).join('')}</div>` : '<p class="muted">這局沒有拿到徽章，再挑戰一次吧！</p>'}
+    <p class="mt code-share">${S.mode === 'class' ? '🏫 班級對戰' : '🎲 自由模式'}・景氣代碼 <b>${esc(S.world.code)}</b>：把代碼給同學，選「班級對戰」輸入，就能挑戰同一段十年。</p>
+  </div>
+  <div class="box">
+    <h3>💬 理財評語</h3>
+    ${comments().map(c => `<div class="comment"><b>${c[1]}</b>${c[0] ? `<span class="wk">第 ${c[0]} 週</span>` : ''}<br>${c[2]}</div>`).join('')}
+  </div>
+  <div class="box">
+    <h3>📈 ${tm('複利')}成果</h3>
+    <p>10 年共投入債券與股票 <b>${money(S.investIn)}</b>，現在值 <b>${money(bsNow)}</b>${S.investOut > 1 ? `（中途賣出拿回 ${money(S.investOut)}）` : ''}，賺到的報酬 <b class="${invGain >= 0 ? 'pos' : 'neg'}">${signMoney(invGain)}</b>。</p>
+    <h3>🛒 實質資產</h3>
+    <p>10 年累積${tm('通貨膨脹', '通膨')} <b>${((S.cpiIdx - 1) * 100).toFixed(1)}%</b>，總資產 ${money(e.tot)} 換算成 18 歲時的購買力，約 <b>${money(real)}</b>（${tm('實質報酬')}）。</p>
+    <h3>🧾 交易成本</h3>
+    <p>10 年共付了${tm('手續費')}與${tm('證券交易稅')} <b>${money(S.fees)}</b>。</p>
+    <h3>🃏 抉擇回顧</h3>
+    ${S.choices.length ? `<table>${S.choices.map(c => `<tr><td>第 ${c.y} 年</td><td>${c.title}<span class="wk">第 ${c.w} 週</span></td><td>${esc(c.pick)}</td><td>${c.good ? '<span class="pos">✓</span>' : '<span class="neg">✗</span>'}</td></tr>`).join('')}</table>` : '<p class="muted">沒有抉擇紀錄</p>'}
+    <h3>🏖 ${tm('退休規劃', '退休試算')}<span class="wk">第 15 週</span></h3>
+    <p>如果維持這 10 年平均 <b>${Math.round(rt.ratio * 100)}%</b> 的存款與投資比例（明年約投入 ${money(rt.c0)}）、平均報酬率 <b>${(rt.r * 100).toFixed(1)}%</b>、每年加薪 3%，到 65 歲大約會有 <b>${money(rt.bal)}</b>。</p>
+    <p class="muted">粗估，實際報酬不固定。</p>
+  </div>
+  <div class="box dark"><h3>十年資產變化</h3><canvas class="chart-cv"></canvas><div class="legend"></div></div>
+  <div class="row" style="justify-content:center">
+    <button class="btn blue" onclick="showRank()">🏆 看排行榜</button>
+    <button class="btn green" onclick="goCreate()">再玩一次</button>
+    <button class="btn gray" onclick="S=null;show('s-title')">回主畫面</button>
+  </div>
+  <p class="muted center mt">本遊戲為教學用簡化模擬，不構成投資建議。</p>`;
+  show('s-end');
+  drawSprite($('#eA'), S.gender, {mood:S.happy, phase:'work'});
+  if (e.grade === 'S' || e.grade === 'A') coinBurst(30);
+}
+
+/* =====================================================
+   排行榜（localStorage，前 10 名）
+===================================================== */
+function addRank(e) {
+  const list = readJSON(RANK_KEY, []);
+  const gl = goalOf(S);
+  list.push({name:S.name, g:S.gender, risk:S.risk, grade:e.grade, score:e.score, total:Math.round(e.tot), date:new Date().toLocaleDateString('zh-TW'), happy:S.happy, code:S.world.code, mode:S.mode, goal:gl ? gl.i : '', goalOk:!!(gl && gl.ok(S))});
+  list.sort((a, b) => b.score - a.score);
+  writeJSON(RANK_KEY, list.slice(0, 50));            // 保留 50 筆，畫面依代碼篩選後顯示前 10 名
+}
+let rankFilter = '';
+function showRank(filter = rankFilter) {
+  rankFilter = filter;
+  const all = readJSON(RANK_KEY, []);
+  const codes = [...new Set(all.filter(r => r.mode === 'class').map(r => r.code))];
+  const list = all.filter(r => !filter || r.code === filter).slice(0, 10);
+  const back = S && S.finished ? 's-end' : 's-title';
+  $('#s-rank').innerHTML = `<div class="box">
+    <h2>🏆 排行榜 TOP 10</h2>
+    ${!STORE_OK ? '<p class="neg">這台瀏覽器禁止儲存資料，排行榜不會保留，但遊戲可以正常玩。</p>' : ''}
+    ${codes.length ? `<div class="row">篩選：<button class="btn small ${!filter ? 'green' : 'gray'}" onclick="showRank('')">全部</button>${codes.map(c => `<button class="btn small ${filter === c ? 'green' : 'gray'}" onclick="showRank('${esc(c)}')">🏫 代碼 ${esc(c)}</button>`).join('')}</div>` : ''}
+    ${list.length ? `<div style="overflow-x:auto"><table class="rank-table"><tr><th>#</th><th></th><th>名字</th><th>屬性</th><th>目標</th><th>等級</th><th class="num">總分</th><th class="num">總資產</th><th>代碼</th><th>日期</th></tr>
+    ${list.map((r, i) => `<tr class="${i === 0 ? 'rank-1' : ''}"><td>${i + 1}</td><td>${spriteHTML('rk' + i, 32)}</td><td>${esc(r.name)}</td><td>${esc(r.risk)}</td><td>${r.goal ? esc(r.goal) + (r.goalOk ? '✓' : '✗') : '—'}</td><td><b class="pf g-${r.grade}" style="text-shadow:2px 2px 0 #000">${r.grade}</b></td><td class="num">${r.score}</td><td class="num">${money(r.total)}</td><td>${r.code ? (r.mode === 'class' ? '🏫' : '🎲') + esc(r.code) : '—'}</td><td>${esc(r.date)}</td></tr>`).join('')}</table></div>`
+    : '<p>還沒有紀錄，快去玩一局吧！</p>'}
+    <p class="muted mt">排行榜只存在這台電腦、這個瀏覽器裡。班級對戰時，用同一台電腦輪流玩，再按代碼篩選，就能比出全班名次。</p>
+    <div class="row mt"><button class="btn" onclick="show('${back}')">◀ 返回</button>
+    ${all.length ? `<button class="btn small red" onclick="confirmBox('確定要清除排行榜？清除後無法復原。',()=>{writeJSON(RANK_KEY,[]);showRank('');},'清除')">清除排行榜</button>` : ''}</div>
+  </div>`;
+  show('s-rank');
+  list.forEach((r, i) => drawSprite($('#rk' + i), r.g || 'm', {mood:r.happy ?? 60, phase:'work'}));
+}
+
+/* =====================================================
+   存檔與讀檔（第七節第 5 點）
+===================================================== */
+function slotSummary(st) {
+  return `${esc(st.name)}・${st.finished ? '玩完 10 年' : `第 ${st.year} 年結束（${18 + st.year} 歲）`}・總資產 ${money(total(st))}`;
+}
+/* 存檔只記錄到「最後一個已結算的年度」，讀檔後從下一年的景氣新聞接著玩 */
+function snap() {
+  const s = JSON.parse(JSON.stringify(S));
+  if (s.hist.length - 1 < s.year) {
+    s.year -= 1;
+    s.light = s.hist[s.hist.length - 1].light;
+    s.lightHist = s.lightHist.slice(0, s.year + 1);
+    s.usedCards = s.usedCards.slice(0, s.choices.length);
+    s.allocs = s.allocs.slice(0, s.year);
+    if (s.year < 5) s.living = s.hist.length > 1 ? s.living : 108000;
+  }
+  s.cur = null; s.marginYear = false; s.qPending = null;
+  s.evPicks = (s.evPicks || []).filter(e => e.y <= s.year);
+  return s;
+}
+function saveTo(i) {
+  const slots = getSlots();
+  const st = snap(); st.slot = i;
+  slots[i] = {t:new Date().toLocaleString('zh-TW', {hour12:false}), s:st};
+  S.slot = i;
+  return setSlots(slots);
+}
+function autoSave(then, quiet) {
+  if (!STORE_OK) { if (!quiet) toast('這台瀏覽器無法存檔，請改用存檔碼'); return then(); }
+  const slots = getSlots();
+  if (S.slot !== null && S.slot !== undefined) { saveTo(S.slot); if (!quiet) flashSaved(); return then(); }
+  const empty = slots.findIndex(x => !x);
+  if (empty >= 0) { saveTo(empty); if (!quiet) flashSaved(`已存檔到欄位 ${empty + 1}`); return then(); }
+  chooseSlot('三個存檔欄位都滿了，要覆蓋哪一格？', i => { saveTo(i); flashSaved(); then(); }, then);
+}
+function chooseSlot(msg, onPick, onSkip) {
+  const slots = getSlots();
+  const html = `<h2>選擇存檔欄位</h2><p>${msg}</p>` + slots.map((x, i) => `<div class="slot ${x ? '' : 'empty'}"><div class="info"><b>欄位 ${i + 1}</b>${x && x.s.finished ? '<span class="tag">已完成</span>' : ''}<br>${x ? slotSummary(x.s) + `<br><span class="muted">${esc(x.t)}</span>` : '（空）'}</div><button class="btn small" data-i="${i}">存到這裡</button></div>`).join('');
+  const bg = modal(html, [{t:onSkip ? '不存檔，繼續' : '取消', cls:'gray', fn:onSkip}], {locked:!!onSkip});
+  bg.querySelectorAll('[data-i]').forEach(b => b.onclick = () => {
+    const i = +b.dataset.i;
+    const go = () => { bg.remove(); onPick(i); };
+    if (slots[i] && i !== S.slot) confirmBox(`欄位 ${i + 1} 已經有「${esc(slots[i].s.name)}」的存檔，確定覆蓋？`, go, '覆蓋');
+    else go();
+  });
+}
+function manualSave(after) {
+  if (!STORE_OK) { toast('這台瀏覽器無法存檔，請改用存檔碼'); return; }
+  if (S.slot !== null && S.slot !== undefined) { saveTo(S.slot); flashSaved(`已存檔到欄位 ${S.slot + 1}`); after && after(); return; }
+  chooseSlot('要存到哪一格？', i => { saveTo(i); flashSaved(`已存檔到欄位 ${i + 1}`); after && after(); });
+}
+function openMenu() {
+  modal(`<h2>☰ 選單</h2><p class="muted">${esc(S.name)}・第 ${S.year} 年</p><div class="menu-col" id="menuBtns"></div>`, [{t:'關閉', cls:'gray'}]);
+  const box = $('#menuBtns');
+  [
+    ['💾 存檔', '', () => manualSave()],
+    ['🏠 存檔並回主畫面', 'green', () => STORE_OK ? manualSave(() => { S = null; show('s-title'); }) : toast('這台瀏覽器無法存檔，請改用存檔碼')],
+    ['🔑 匯出存檔碼', 'blue', () => exportCode(snap())],
+    ['📖 名詞小抄', 'blue', openTerms],
+    ['❓ 遊戲說明', 'blue', () => show('s-help')],
+    ['🚪 不存檔，回主畫面', 'red', () => confirmBox('還沒存的進度會不見，確定回主畫面？', () => { S = null; show('s-title'); }, '回主畫面')]
+  ].forEach(([t, cls, fn]) => {
+    const b = document.createElement('button'); b.className = 'btn ' + cls; b.style.minWidth = '250px'; b.textContent = t;
+    b.onclick = () => { b.closest('.modal-bg').remove(); fn(); };
+    box.appendChild(b);
+  });
+  if (S.hist.length - 1 < S.year) box.insertAdjacentHTML('beforeend', '<p class="muted center">今年還沒結算，存檔會記錄到上一年為止。</p>');
+}
+function showLoad() {
+  const slots = getSlots();
+  $('#s-load').innerHTML = `<div class="box">
+    <h2>繼續遊戲</h2>
+    ${!STORE_OK ? '<p class="neg">這台瀏覽器無法存檔，請改用下方的存檔碼。</p>' : ''}
+    ${slots.map((x, i) => `<div class="slot ${x ? '' : 'empty'}">
+      ${x ? spriteHTML('sl' + i, 48) : ''}
+      <div class="info"><b>欄位 ${i + 1}</b>${x && x.s.finished ? '<span class="tag">已完成</span>' : ''}<br>${x ? slotSummary(x.s) + `<br><span class="muted">存檔時間 ${esc(x.t)}</span>` : '（空）'}</div>
+      ${x ? `<button class="btn small green" onclick="loadSlot(${i})">${x.s.finished ? '重看結局' : '讀取'}</button>
+             <button class="btn small blue" onclick="exportCode(getSlots()[${i}].s)">匯出存檔碼</button>
+             <button class="btn small red" onclick="delSlot(${i})">刪除</button>` : ''}
+    </div>`).join('')}
+    <h3>🔑 匯入存檔碼</h3>
+    <p class="muted">把在別台電腦匯出的存檔碼貼在這裡，就能接著玩。</p>
+    <textarea id="importBox" placeholder="把存檔碼貼在這裡（PXL1. 開頭）"></textarea>
+    <p class="err" id="importErr"></p>
+    <div class="row"><button class="btn gray" onclick="show('s-title')">◀ 返回</button><button class="btn green" onclick="importCode()">匯入並繼續</button></div>
+  </div>`;
+  show('s-load');
+  slots.forEach((x, i) => x && drawSprite($('#sl' + i), x.s.gender, {mood:x.s.happy, phase:isWork(Math.max(x.s.year, 1)) ? 'work' : 'college'}));
+}
+function migrate(st) {                         // 舊版（v0.6 以前）存檔沒有景氣代碼，補上
+  if (!st.world) { st.world = genWorld(randCode()); st.lightHist.forEach((l, i) => { if (l !== undefined && l !== null) st.world.light[i] = l; }); }
+  ['quizLog', 'badges', 'evPicks'].forEach(k => { if (!Array.isArray(st[k])) st[k] = []; });
+  if (!st.mode) st.mode = 'free';
+  return st;
+}
+function resume(st) {
+  S = migrate(st); hudPrev = null;
+  if (S.finished) return renderEnd();
+  if (S.year === 4) return showGrad();
+  nextYear();
+}
+function loadSlot(i) {
+  const x = getSlots()[i]; if (!x) return;
+  const st = x.s; st.slot = i;
+  resume(st);
+  toast(`讀取欄位 ${i + 1}：${st.name}`);
+}
+function delSlot(i) {
+  const x = getSlots()[i];
+  confirmBox(`確定刪除欄位 ${i + 1}「${esc(x.s.name)}」的存檔？刪除後無法復原。`, () => { const s = getSlots(); s[i] = null; setSlots(s); showLoad(); toast('已刪除'); }, '刪除');
+}
+/* 存檔碼：PXL1. + Base64(JSON) + . + 檢查碼 */
+function checksum(str) { let h = 7; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0; return h.toString(36); }
+function toCode(st) {
+  const s = {...st}; delete s.slot;
+  const b = btoa(unescape(encodeURIComponent(JSON.stringify(s))));
+  return 'PXL1.' + b + '.' + checksum(b);
+}
+function fromCode(code) {
+  try {
+    const c = String(code).replace(/\s+/g, '');
+    const m = c.match(/^PXL1\.([A-Za-z0-9+/=]+)\.([a-z0-9]+)$/); if (!m) return null;
+    if (checksum(m[1]) !== m[2]) return null;
+    const st = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+    const need = ['name', 'gender', 'risk', 'year', 'light', 'cash', 'bond', 'stock', 'debt', 'happy', 'hist', 'allocs', 'lightHist', 'usedCards'];
+    if (!st || !need.every(k => k in st) || !Array.isArray(st.hist) || st.year < 0 || st.year > 10) return null;
+    st.slot = null; return st;
+  } catch (e) { return null; }
+}
+function exportCode(st) {
+  const code = toCode(st);
+  modal(`<h2>🔑 存檔碼</h2><p>把這串文字複製起來（例如貼到自己的 LINE 或筆記），到別台電腦按「繼續遊戲 → 匯入存檔碼」就能接著玩。</p>
+    <textarea id="codeBox" readonly>${code}</textarea>`, [{t:'複製', cls:'green', keep:true, fn:() => {
+      const ta = $('#codeBox'); ta.select();
+      const ok = () => toast('已複製存檔碼'), fail = () => { try { document.execCommand('copy'); ok(); } catch (e) { toast('請手動選取文字複製'); } };
+      navigator.clipboard ? navigator.clipboard.writeText(code).then(ok, fail) : fail();
+    }}, {t:'關閉', cls:'gray'}]);
+  setTimeout(() => { const t = $('#codeBox'); t && t.select(); }, 50);
+}
+function importCode() {
+  const st = fromCode($('#importBox').value);
+  if (!st) { $('#importErr').textContent = '存檔碼無法辨識'; return; }
+  resume(st);
+  toast(`已匯入 ${st.name} 的存檔`);
+}
+
+/* =====================================================
+   遊戲說明
+===================================================== */
+function renderHelp() {
+  const back = lastScreen;
+  $('#s-help').innerHTML = `<div class="box">
+    <h2>遊戲說明</h2>
+    <p>你剛從高中畢業，18 歲，口袋裡有 <b>20,000 元</b>。接下來 10 年，每年做一次理財決定：</p>
+    <ol style="margin:8px 0 8px 22px">
+      <li><b>景氣新聞</b>：今年是什麼${tm('景氣對策信號', '景氣燈號')}？央行升息還是降息？</li>
+      <li><b>年度分配</b>：用五個滑桿把${tm('可支配所得')}分給享樂消費、定存、債券、股票 ETF、保險，剩餘要剛好 0%。</li>
+      <li><b>年度結算</b>：投資有賺有賠，還會翻一張事件卡；第 2、4、6、8、10 年會先出現「抉擇卡」。</li>
+    </ol>
+    <p>前 4 年讀大學（家裡生活費＋打工），第 5 年起上班。28 歲時依「總資產 ÷ 10,000＋幸福值＋加減分」評出 S～D 等級。</p>
+    <h3>小提醒</h3>
+    <ul style="margin:4px 0 8px 22px">
+      <li>享樂消費影響幸福值：未滿 10% 扣 8 分、10～19% 扣 3 分、20～34% 加 3 分、35% 以上加 6 分。</li>
+      <li>保險要達可支配所得的 5% 才算「有保障」。</li>
+      <li>買債券、ETF 要付手續費 0.1425%；賣 ETF 再加證交稅 0.1%。</li>
+      <li>突然要花錢時，依序用：現金 → 賣債券 → 賣股票 → 刷卡變負債（年利率 15%）。</li>
+      <li>每年按「下一年」會自動存檔；狀態列的「☰ 選單」可以手動存檔、匯出存檔碼。</li>
+      <li>有虛線底線和問號的名詞，例如 ${tm('複利')}，點一下就有解釋。</li>
+      <li>每年分配前有一題「快問快答」，答對年底現金 +2,000、幸福值 +2。</li>
+      <li>開始時選一個人生目標，28 歲達成就 +20 分；過程中會解鎖成就徽章。</li>
+      <li>「班級對戰」：全班輸入同一個代碼，景氣、事件、題目都一樣，比的是誰的決策最好。</li>
+    </ul>
+    <h3>課程對照</h3>
+    <div style="overflow-x:auto"><table>
+      <tr><th>週次</th><th>主題</th><th>遊戲裡的位置</th></tr>
+      <tr><td>2</td><td>金融體系、資訊不對稱</td><td>檸檬車、手機險事件；保險滑桿</td></tr>
+      <tr><td>3</td><td>CPI、通膨、利率、景氣燈號</td><td>景氣新聞卡；生活費隨通膨上漲</td></tr>
+      <tr><td>4</td><td>經濟指標、逆向操作、匯率</td><td>燈號決定股票報酬；失業、匯率事件</td></tr>
+      <tr><td>5</td><td>聯準會、升降息、鷹鴿</td><td>央行立場改變定存與債券報酬</td></tr>
+      <tr><td>6</td><td>風險報酬、複利、資產配置</td><td>風險測驗、滑桿配置、72 法則評語</td></tr>
+      <tr><td>7</td><td>交易成本、股利</td><td>手續費、證交稅；ETF 含配息再投入</td></tr>
+      <tr><td>9</td><td>ETF、定期定額</td><td>股票 ETF 滑桿、紀律評語</td></tr>
+      <tr><td>10</td><td>債券與利率</td><td>升息債券跌、降息債券漲</td></tr>
+      <tr><td>11～14</td><td>技術分析、財報、融資、內線交易</td><td>抉擇卡</td></tr>
+      <tr><td>15</td><td>收支、預備金、信用、保險、退休</td><td>分配機制、卡債、退休試算</td></tr>
+      <tr><td>16</td><td>心理偏誤、詐騙</td><td>抉擇卡：詐騙群組、假簡訊、大跌要不要賣</td></tr>
+    </table></div>
+    <p class="muted mt">報酬率與事件都是教學用的簡化設定，不代表真實市場，也不構成投資建議。</p>
+    <div class="row mt"><button class="btn" onclick="show('${back}')">◀ 返回</button></div>
+  </div>`;
+}
+
+/* =====================================================
+   背景音樂：用 Web Audio API 即時合成 8-bit 風格旋律（不用額外音樂檔）
+   C 大調、128 BPM，和弦 C → Am → F → G，8 小節循環
+===================================================== */
+const BGM = (() => {
+  const BPM = 128, STEP = 60 / BPM / 2;           // 一格＝八分音符
+  const C5 = 72;
+  // 主旋律（MIDI 音高，0＝休止），每小節 8 格
+  const MEL = [
+    76,79,84,79, 76,79,81,79,   // C
+    76, 0,72,76, 81, 0,79,76,   // Am
+    77,81,84,81, 77,81,79,77,   // F
+    74, 0,79, 0, 71,74,79, 0,   // G
+    76,79,84,86, 88, 0,86,84,   // C
+    81, 0,76, 0, 81,84,83,81,   // Am
+    77, 0,81,84, 81, 0,79,77,   // F
+    79, 0,83,86, 84, 0, 0, 0    // G → C
+  ];
+  // 低音（每拍一個音：根音、五度交替）
+  const ROOT = [48, 45, 41, 43, 48, 45, 41, 43];   // C Am F G
+  // 和弦琶音（三和弦，小聲墊底）
+  const CHORD = [[60,64,67],[57,60,64],[53,57,60],[55,59,62]];
+  let ctx = null, master = null, noise = null, timer = null, step = 0, nextT = 0;
+  let on = (() => { try { return localStorage.getItem('pxlife_bgm') !== 'off'; } catch (e) { return true; } })();
+  const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+  function tone(type, m, t, dur, vol) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(hz(m), t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function hat(t, vol) {
+    const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    src.buffer = noise; f.type = 'highpass'; f.frequency.value = 6000;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    src.connect(f); f.connect(g); g.connect(master); src.start(t); src.stop(t + 0.06);
+  }
+  function kick(t) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
+    g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.2);
+  }
+  function schedule() {
+    while (nextT < ctx.currentTime + 0.15) {
+      const i = step % 64, bar = Math.floor(i / 8), beat = i % 8;
+      const m = MEL[i];
+      if (m) tone('square', m, nextT, STEP * 0.85, 0.11);
+      if (beat % 2 === 0) tone('triangle', ROOT[bar] + (beat % 4 === 2 ? 7 : 0), nextT, STEP * 1.7, 0.32);
+      const ch = CHORD[bar % 4];
+      tone('square', ch[beat % 3] , nextT, STEP * 0.5, 0.025);
+      if (beat === 0 || beat === 4) kick(nextT);
+      if (beat % 2 === 1) hat(nextT, 0.12);
+      nextT += STEP; step++;
+    }
+  }
+  function init() {
+    if (ctx) return true;
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+    ctx = new AC();
+    master = ctx.createGain(); master.gain.value = 0.18; master.connect(ctx.destination);
+    noise = ctx.createBuffer(1, ctx.sampleRate * 0.1, ctx.sampleRate);
+    const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return true;
+  }
+  function start() {
+    if (!init()) return;
+    ctx.resume();
+    if (timer) return;
+    nextT = ctx.currentTime + 0.06;
+    timer = setInterval(schedule, 25);
+  }
+  function stop() { clearInterval(timer); timer = null; if (ctx) ctx.suspend(); }
+  // 音效：拿錢、扣錢、升級、徽章、答對、答錯、按鈕、燈號變化
+  const SFX = {
+    coin:[[88,.06],[95,.14]], lose:[[67,.1],[63,.1],[58,.2]], up:[[72,.08],[76,.08],[79,.08],[84,.24]],
+    badge:[[79,.07],[84,.07],[88,.07],[91,.07],[96,.28]], right:[[84,.08],[91,.18]], wrong:[[55,.12],[50,.26]],
+    click:[[90,.025]], light:[[67,.05],[74,.05],[79,.08]]
+  };
+  function sfx(name) {
+    if (!on || !SFX[name] || !init()) return;
+    if (ctx.state === 'suspended') ctx.resume();
+    let t = ctx.currentTime + 0.01;
+    SFX[name].forEach(([m, d]) => { tone(name === 'lose' || name === 'wrong' ? 'sawtooth' : 'square', m, t, d + 0.05, name === 'click' ? 0.05 : 0.14); t += d; });
+  }
+  function ui() {
+    $('#musicBtn').classList.toggle('off', !on);
+    $('#musicTxt').textContent = on ? '聲音：開' : '聲音：關';
+  }
+  function toggle() {
+    if (on && !timer) { start(); ui(); return; }   // 還沒開始播：第一次按就是播放
+    on = !on;
+    try { localStorage.setItem('pxlife_bgm', on ? 'on' : 'off'); } catch (e) {}
+    on ? start() : stop(); ui();
+  }
+  // 瀏覽器規定：使用者第一次點擊後才能播放聲音
+  function firstGesture(e) {
+    if (e.target.closest && e.target.closest('#musicBtn')) return;
+    if (on) start();
+    window.removeEventListener('pointerdown', firstGesture, true);
+    window.removeEventListener('keydown', firstGesture, true);
+  }
+  window.addEventListener('pointerdown', firstGesture, true);
+  window.addEventListener('keydown', firstGesture, true);
+  document.addEventListener('visibilitychange', () => { if (!ctx || !on) return; document.hidden ? ctx.suspend() : ctx.resume(); });
+  document.addEventListener('pointerdown', e => { if (e.target.closest && e.target.closest('.btn,.goal,.mcard,.gcard')) sfx('click'); }, true);
+  return {toggle, ui, sfx, get playing() { return !!timer; }};
+})();
+
+/* 啟動 */
+BGM.ui();
+show('s-title');
+</script>
+</body>
+</html>
